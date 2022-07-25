@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Movies</string>
+    <string name="rc_title">Список фильмов</string>
+    <string name="like">Нравится</string>
+    <string name="share_title">Пригласить друга</string>
+    <string name="comment_title">Комментарий</string>
+    <string name="invite_message">Приглашения для друга</string>
+    <string name="invite_message_toast">Сообщение для тоста отправки</string>
+    <string name="no_alert_answer">Нет</string>
+    <string name="yes_alert_answer">Да</string>
+    <string name="not_save_data">Данные не сохранены</string>
+    <string name="save_alert_title">Данные изменены</string>
+    <string name="save_alert_text">Хотите сохранить данные</string>
+</resources>
