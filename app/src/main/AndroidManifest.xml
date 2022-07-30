@@ -11,6 +11,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Movies">
         <activity
+            android:name=".favoriteMovies.FavoriteMovieActivity"
+            android:exported="false" />
+        <activity
             android:name=".moviesDetails.MovieDetailsActivity"
             android:exported="false" />
         <activity
