@@ -6,6 +6,7 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import ru.yandex.repinanr.movies.R
+import ru.yandex.repinanr.movies.data.Const.NO_POSITION
 import ru.yandex.repinanr.movies.data.DataModel
 import ru.yandex.repinanr.movies.data.DataModel.Movie
 import ru.yandex.repinanr.movies.databinding.MovieItemBinding
@@ -17,27 +18,32 @@ class MovieViewHolder(item: View): RecyclerView.ViewHolder(item) {
         movieItemBinding = MovieItemBinding.bind(itemView)
 
         with(movieItemBinding) {
-            val chooseColor = if (chooseItemPosition == position && !isFavoriteActivity) R.color.purple_500 else R.color.black
-            val chooseColorList = ContextCompat.getColorStateList(itemView.context, chooseColor)
             ivMovieItemImg.setImageResource(item.image)
             tvMovieItmName.text = item.name
             tvRcDesription.text = item.description
+
+            val chooseColor = if (chooseItemPosition == position && !isFavoriteActivity) R.color.purple_500 else R.color.black
+            val chooseColorList = ContextCompat.getColorStateList(itemView.context, chooseColor)
+            tvMovieItmName.setTextColor(chooseColorList)
+
             val favoriteColor = if (item.isFavorite) R.color.red else R.color.gray
             val csl = AppCompatResources.getColorStateList(itemView.context, favoriteColor)
             imageViewFavorite.imageTintList = csl
-            tvMovieItmName.setTextColor(chooseColorList)
 
             ivMovieItemImg.setOnClickListener {
                 listener.onItemClickListener(item, position)
                 chooseItemPosition = position
+                val chooseListColor = ContextCompat.getColorStateList(itemView.context, R.color.purple_500)
+                tvMovieItmName.setTextColor(chooseListColor)
             }
             tvMovieItmName.setOnClickListener {
                 listener.onItemClickListener(item, position)
-                chooseItemPosition = position
+                bindChooseItem(position)
             }
 
             imageViewFavorite.setOnClickListener {
                 listener.onFavoriteClickListener(item, position)
+                bindChooseItem(position)
             }
 
             imageViewRemove.setOnClickListener {
@@ -55,7 +61,13 @@ class MovieViewHolder(item: View): RecyclerView.ViewHolder(item) {
         }
     }
 
+    private fun bindChooseItem(newPosition: Int) {
+        val chooseListColor = ContextCompat.getColorStateList(itemView.context, R.color.purple_500)
+        movieItemBinding.tvMovieItmName.setTextColor(chooseListColor)
+        chooseItemPosition = newPosition
+    }
+
     companion object {
-        var chooseItemPosition = -1
+        var chooseItemPosition = NO_POSITION
     }
 }

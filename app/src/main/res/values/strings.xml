@@ -6,6 +6,10 @@
     <string name="rc_title">Список фильмов</string>
     <string name="favorite_button_text">Избранное</string>
 
+    <!-- Favorite list -->
+    <string name="toast_remove_favorite_text">Фильм удален из избранного</string>
+    <string name="toast_add_favorite_text">Фильм добавлен в избранное</string>
+
     <!-- Details screen -->
     <string name="like">Нравится</string>
     <string name="share_title">Пригласить друга</string>

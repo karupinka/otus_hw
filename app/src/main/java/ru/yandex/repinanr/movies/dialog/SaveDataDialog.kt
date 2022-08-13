@@ -45,10 +45,10 @@ class SaveDataDialog: DialogFragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        try {
-            listener = context as SaveDataDialogListener
-        } catch (e: ClassCastException) {
-            throw ClassCastException(context.toString() + "must be SaveDataDialogListener")
+        if (context is SaveDataDialogListener) {
+            listener = context
+        } else {
+            throw RuntimeException("Activity must implements interface OnBackPressedListener")
         }
     }
 

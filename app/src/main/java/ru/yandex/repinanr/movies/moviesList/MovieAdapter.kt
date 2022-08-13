@@ -1,17 +1,15 @@
 package ru.yandex.repinanr.movies.moviesList
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.ListAdapter
 import ru.yandex.repinanr.movies.R
-import ru.yandex.repinanr.movies.data.Const.TAG_MOVIE_ADAPTER
-import ru.yandex.repinanr.movies.data.DataModel
+import ru.yandex.repinanr.movies.data.Const
+import ru.yandex.repinanr.movies.data.Const.NO_POSITION
 import ru.yandex.repinanr.movies.data.DataModel.Movie
 
 class MovieAdapter(val isFavoriteActivity: Boolean = false) :
-    RecyclerView.Adapter<MovieViewHolder>() {
-    private val dataArray = mutableListOf<DataModel>()
+    ListAdapter<Movie, MovieViewHolder>(MovieItemDiffUtilCallback()) {
     private lateinit var listener: MovieListener
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MovieViewHolder {
@@ -24,37 +22,15 @@ class MovieAdapter(val isFavoriteActivity: Boolean = false) :
     }
 
     override fun onBindViewHolder(holder: MovieViewHolder, position: Int) {
-        holder.bind(dataArray[position], position, listener, isFavoriteActivity)
-    }
-
-    override fun getItemCount(): Int {
-        return dataArray.size
+        holder.bind(getItem(position), position, listener, isFavoriteActivity)
     }
 
     override fun getItemViewType(position: Int): Int {
-        val item = dataArray[position]
+        val item = getItem(position)
         return when (item) {
             is Movie -> TYPE_MOVIE
             else -> throw ClassNotFoundException("Error recycler view")
         }
-    }
-
-    fun setDataModel(movies: List<DataModel>) {
-        dataArray.clear()
-        dataArray.addAll(movies)
-        notifyDataSetChanged()
-    }
-
-    fun updateMovie(dataModel: DataModel, position: Int) {
-        dataArray[position] = dataModel
-        notifyItemChanged(position)
-        Log.d(TAG_MOVIE_ADAPTER, "Data $dataModel at position $position has changed")
-    }
-
-    fun removeMovie(position: Int) {
-        dataArray.removeAt(position)
-        notifyItemRemoved(position)
-        Log.d(TAG_MOVIE_ADAPTER, "Data at position $position has removed")
     }
 
     fun setListener(listener: MovieListener) {
@@ -62,9 +38,14 @@ class MovieAdapter(val isFavoriteActivity: Boolean = false) :
     }
 
     interface MovieListener {
-        fun onItemClickListener(movie: Movie, position: Int)
         fun onFavoriteClickListener(movie: Movie, position: Int)
-        fun onRemoveClickListener(movie: Movie, position: Int)
+        fun onItemClickListener(movie: Movie, position: Int) {
+            // DO NOTHING
+        }
+
+        fun onRemoveClickListener(movie: Movie, position: Int) {
+            // DO NOTHING
+        }
     }
 
     companion object {
