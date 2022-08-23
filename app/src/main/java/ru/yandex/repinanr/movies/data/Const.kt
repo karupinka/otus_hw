@@ -7,4 +7,5 @@ object Const {
     const val TAG_MOVIE_LIST_ACTIVITY = "MovieListActivity"
     const val TAG_MOVIE_FAVORITE_LIST_ACTIVITY = "FavoriteMovieListActivity"
     const val TAG_MOVIE_ADAPTER = "MovieAdapter"
+    const val NO_POSITION = -1
 }

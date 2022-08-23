@@ -1,133 +1,143 @@
 package ru.yandex.repinanr.movies.moviesList
 
-import android.content.Intent
-import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
+import android.view.View.VISIBLE
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.GridLayoutManager
-import ru.yandex.repinanr.movies.app.App
-import ru.yandex.repinanr.movies.data.Const.MOVIE_KEY
-import ru.yandex.repinanr.movies.data.Const.TAG_MOVIE_LIST_ACTIVITY
-import ru.yandex.repinanr.movies.data.DataModel
-import ru.yandex.repinanr.movies.data.DataSource
+import androidx.fragment.app.DialogFragment
+import ru.yandex.repinanr.movies.R
+import ru.yandex.repinanr.movies.data.Const
 import ru.yandex.repinanr.movies.databinding.ActivityMainBinding
-import ru.yandex.repinanr.movies.favoriteMovies.FavoriteMovieActivity
-import ru.yandex.repinanr.movies.moviesDetails.MovieDetailsActivity
+import ru.yandex.repinanr.movies.dialog.SaveDataDialog
+import ru.yandex.repinanr.movies.favoriteMovies.FavoriteMovieFragment
+import ru.yandex.repinanr.movies.moviesDetails.MoviesDetailFragment
 
-class MoviesListActivity : AppCompatActivity() {
+class MoviesListActivity : AppCompatActivity(), SaveDataDialog.SaveDataDialogListener {
     lateinit var mainBinding: ActivityMainBinding
-    private var resultLauncher: ActivityResultLauncher<Intent>? = null
-    val dataSource = DataSource.getDataSource()
-    lateinit var adapter: MovieAdapter
+    private var moviesListFragment: MoviesListFragment? = null
+    private var favoriteMovieFragment: FavoriteMovieFragment? = null
+    private lateinit var detailFragment: MoviesDetailFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mainBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mainBinding.root)
-        initAdapter()
-        initFavoriteButton()
-    }
+        setBottomNav()
 
-    /**
-     * Init Adapter and RecyclerView
-     */
-    private fun initAdapter() {
-        mainBinding.apply {
-            adapter = MovieAdapter()
-
-            resultLauncher =
-                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                    if (result.resultCode == RESULT_OK) {
-                        val bundle = result.data?.extras
-
-                        if (bundle != null) {
-                            val updateMovie = bundle.getSerializable(MOVIE_KEY) as DataModel.Movie
-                            val index = App.getIndex(updateMovie.movieId)
-                            adapter.updateMovie(updateMovie, index)
-                            Log.i(
-                                TAG_MOVIE_LIST_ACTIVITY,
-                                "isFavorite: ${updateMovie.isFavorite}; comment: ${updateMovie.comment}"
-                            )
-                        }
+        if (savedInstanceState == null) {
+            moviesListFragment = MoviesListFragment()
+            setMoviesListFragmentToContainer()
+        } else {
+            val fragment = supportFragmentManager.findFragmentById(R.id.fragment)
+            when (fragment) {
+                is MoviesListFragment -> {
+                    moviesListFragment = fragment
+                    setMoviesListFragmentToContainer()
+                }
+                is FavoriteMovieFragment -> {
+                    favoriteMovieFragment = fragment
+                    favoriteMovieFragment?.let {
+                        supportFragmentManager.beginTransaction()
+                            .replace(R.id.fragment, it)
+                            .commit()
                     }
                 }
-
-            adapter.setListener(object : MovieAdapter.MovieListener {
-                override fun onItemClickListener(movie: DataModel.Movie, position: Int) {
-                    adapterOnClick(movie)
-                    adapter.notifyDataSetChanged()
+                is MoviesDetailFragment -> {
+                    moviesListFragment = MoviesListFragment()
+                    detailFragment = fragment
+                    setMoviesListFragmentToContainer()
+                    supportFragmentManager.beginTransaction()
+                        .add(R.id.fragment, detailFragment)
+                        .commit()
                 }
-
-                override fun onFavoriteClickListener(movie: DataModel.Movie, position: Int) {
-                    val updateMovie = DataModel.Movie(
-                        movieId = movie.movieId,
-                        name = movie.name,
-                        description = movie.description,
-                        image = movie.image,
-                        isFavorite = !movie.isFavorite,
-                        comment = movie.comment
-                    )
-                    adapter.updateMovie(updateMovie, position)
-                    dataSource.changeMovie(position, updateMovie)
-                }
-
-                override fun onRemoveClickListener(movie: DataModel.Movie, position: Int) {
-                    // DO NOTHING
-                }
-            })
-
-            adapter.setDataModel(getSourceArray())
-            rcMovie.adapter = adapter
-
-            val spanCount =
-                if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) 2 else 3
-            rcMovie.layoutManager = GridLayoutManager(this@MoviesListActivity, spanCount)
-
-            rcMovie.addItemDecoration(RecyclerViewItemDecoration())
-            rcMovie.itemAnimator = MovieItemAnimator()
+                else -> throw RuntimeException("Unknown fragment")
+            }
         }
     }
 
-    /**
-     * Set FavoriteButton clickListener
-     */
-    fun initFavoriteButton() {
-        val favoriteResultLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == RESULT_OK) {
-                    adapter.setDataModel(getSourceArray())
-                } else {
-                    adapter.setDataModel(getSourceArray())
+    override fun onBackPressed() {
+        if (supportFragmentManager.backStackEntryCount > 0) {
+            if (isDetailFragment()) {
+                getDetailFragment()?.let {
+                    if (it.isMovieChanged()) {
+                        val dialog = SaveDataDialog()
+                        dialog.show(supportFragmentManager, "SaveDataDialog")
+                    } else {
+                        super.onBackPressed()
+                        mainBinding.bottomNavigation.visibility = VISIBLE
+                    }
+                }
+            } else {
+                supportFragmentManager.popBackStack()
+                mainBinding.bottomNavigation.visibility = VISIBLE
+            }
+        } else {
+            super.onBackPressed()
+            mainBinding.bottomNavigation.visibility = VISIBLE
+        }
+    }
+
+    private fun isDetailFragment(): Boolean {
+        return if (supportFragmentManager.backStackEntryCount > 0) {
+            supportFragmentManager.getBackStackEntryAt(supportFragmentManager.backStackEntryCount - 1).name == "Detail"
+        } else {
+            false
+        }
+    }
+
+    private fun setBottomNav() {
+        mainBinding.bottomNavigation.setOnItemSelectedListener { itemMenu ->
+            when (itemMenu.itemId) {
+                R.id.nav_movies -> {
+                    if (moviesListFragment == null) {
+                        moviesListFragment = MoviesListFragment()
+                    }
+                    setMoviesListFragmentToContainer()
+                }
+                R.id.nav_favorite -> {
+                    if (favoriteMovieFragment == null) {
+                        favoriteMovieFragment = FavoriteMovieFragment()
+                    }
+                    favoriteMovieFragment?.let {
+                        supportFragmentManager.beginTransaction()
+                            .replace(R.id.fragment, it)
+                            .commit()
+                    }
                 }
             }
-
-        mainBinding.favoriteBtn.setOnClickListener {
-            val intent = Intent(this, FavoriteMovieActivity()::class.java)
-            favoriteResultLauncher.launch(intent)
+            true
         }
     }
 
-    /**
-     * Opens MovieDetailActivity when RecyclerView item is clicked
-     *
-     * @param [movie] Movie
-     */
-    private fun adapterOnClick(movie: DataModel.Movie) {
-        val intent = Intent(this, MovieDetailsActivity()::class.java)
-
-        intent.putExtra(MOVIE_KEY, movie)
-        resultLauncher?.launch(intent)
+    private fun getDetailFragment(): MoviesDetailFragment? {
+        return supportFragmentManager.findFragmentByTag("Detail") as? MoviesDetailFragment
     }
 
-    /**
-     * Get Array with Movie data
-     */
-    private fun getSourceArray(): ArrayList<DataModel> {
-        val array = arrayListOf<DataModel>()
-        dataSource.getMovieArrayList().value?.let { array.addAll(it) }
-        return array
+    private fun setMoviesListFragmentToContainer() {
+        moviesListFragment?.let {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment, it)
+                .addToBackStack("main")
+                .commit()
+        }
+    }
+
+    override fun onDialogPositiveClick(dialog: DialogFragment) {
+        getDetailFragment()?.let {
+            it.updateMovie()
+        }
+        dialog.dismiss()
+        Log.d(Const.TAG_DETAIL_ACTIVITY, "onDialogPositiveClick")
+        supportFragmentManager.popBackStack()
+        mainBinding.bottomNavigation.visibility = VISIBLE
+    }
+
+    override fun onDialogNegativeClick(dialog: DialogFragment) {
+        Toast.makeText(this, R.string.not_save_data, Toast.LENGTH_LONG).show()
+        dialog.dismiss()
+        Log.d(Const.TAG_DETAIL_ACTIVITY, "onDialogNegativeClick")
+        supportFragmentManager.popBackStack()
+        mainBinding.bottomNavigation.visibility = VISIBLE
     }
 }

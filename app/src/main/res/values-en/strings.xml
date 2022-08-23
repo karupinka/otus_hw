@@ -3,6 +3,10 @@
     <!-- App base -->
     <string name="app_name">Movies</string>
 
+    <!-- Favorite list -->
+    <string name="toast_remove_favorite_text">The movie is removed from favorite</string>
+    <string name="toast_add_favorite_text">The movie is added to favorite</string>
+
     <!-- Movies list -->
     <string name="rc_title">Movies list</string>
     <string name="favorite_button_text">Favorite</string>
