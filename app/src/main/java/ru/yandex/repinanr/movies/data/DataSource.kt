@@ -18,6 +18,7 @@ package ru.yandex.repinanr.movies.data
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import ru.yandex.repinanr.movies.app.App
 import ru.yandex.repinanr.movies.app.getInitialMoviesArray
 
 class DataSource {
@@ -27,15 +28,53 @@ class DataSource {
     /**
      * Update changed movie item in LiveData array
      *
-     * @param [index] Choose movie id
-     * @param [comment] Choose movie id
-     * @param [isFavorite] Choose movie id
+     * @param [index] Movie position
+     * @param [movie] Movie
      */
-    fun changeMovie(index: Int, comment: String, isFavorite: Boolean) {
+    fun changeMovie(index: Int, movie: DataModel.Movie) {
         val currentList = moviesLiveData.value
         if (currentList != null && currentList.size >= index) {
-            currentList[index].isFavorite = isFavorite
-            currentList[index].comment = comment
+            currentList.set(index, movie)
+            moviesLiveData.postValue(currentList)
+        }
+    }
+
+    /**
+     * Update changed movie item in LiveData array
+     *
+     * @param [oldMovie] Old movie item
+     * @param [newMovie] New movie item
+     */
+    fun changeMovie(oldMovie: DataModel.Movie, newMovie: DataModel.Movie) {
+        val currentList = moviesLiveData.value
+        if (currentList?.contains(oldMovie) ?: false) {
+            currentList?.set(App.getIndex(oldMovie.movieId), newMovie)
+            moviesLiveData.postValue(currentList)
+        }
+    }
+
+    /**
+     * Update changed movie item in LiveData array
+     *
+     * @param [index] Movie position
+     */
+    fun removeMovie(index: Int) {
+        val currentList = moviesLiveData.value
+        if (currentList != null && currentList.size >= index) {
+            currentList.removeAt(index)
+            moviesLiveData.postValue(currentList)
+        }
+    }
+
+    /**
+     * Update changed movie item in LiveData array
+     *
+     * @param [movie] Movie
+     */
+    fun removeMovie(movie: DataModel.Movie) {
+        val currentList = moviesLiveData.value
+        if (currentList?.contains(movie) ?: false) {
+            currentList?.remove(movie)
             moviesLiveData.postValue(currentList)
         }
     }
@@ -47,7 +86,7 @@ class DataSource {
      *
      * @return Movie from LiveData array by index
      */
-    fun getMovie(index: Int): Movie? {
+    fun getMovie(index: Int): DataModel.Movie? {
         val currentList = moviesLiveData.value
         if (currentList != null && currentList.size >= index) {
             return currentList[index]
@@ -61,7 +100,7 @@ class DataSource {
      *
      * @return Movie array from LiveData
      */
-    fun getMovieArrayList(): LiveData<ArrayList<Movie>> {
+    fun getMovieArrayList(): LiveData<ArrayList<DataModel.Movie>> {
         return moviesLiveData
     }
 

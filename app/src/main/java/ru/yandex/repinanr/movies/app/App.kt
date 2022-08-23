@@ -2,7 +2,7 @@ package ru.yandex.repinanr.movies.app
 
 import android.app.Application
 import ru.yandex.repinanr.movies.R
-import ru.yandex.repinanr.movies.data.Movie
+import ru.yandex.repinanr.movies.data.DataModel.Movie
 
 class App : Application() {
     companion object {

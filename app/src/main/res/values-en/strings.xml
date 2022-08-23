@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App base -->
+    <string name="app_name">Movies</string>
+
+    <!-- Movies list -->
+    <string name="rc_title">Movies list</string>
+    <string name="favorite_button_text">Favorite</string>
+
+    <!-- Details screen -->
+    <string name="like">Like</string>
+    <string name="share_title">Share</string>
+    <string name="comment_title">Comment</string>
+    <string name="invite_message">Invite message for your friend</string>
+    <string name="invite_message_toast">Message sent</string>
+    <string name="no_alert_answer">No</string>
+    <string name="yes_alert_answer">Yes</string>
+    <string name="cancel_alert_answer">Cancel</string>
+    <string name="not_save_data">Data has not saved</string>
+    <string name="save_alert_title">Data changed</string>
+    <string name="save_alert_text">Do you want to save data?</string>
+</resources>

@@ -1,6 +1,12 @@
 <resources>
-    <string name="app_name">Movies</string>
+    <!-- App base -->
+    <string name="app_name">Поиск фильмов</string>
+
+    <!-- Movies list -->
     <string name="rc_title">Список фильмов</string>
+    <string name="favorite_button_text">Избранное</string>
+
+    <!-- Details screen -->
     <string name="like">Нравится</string>
     <string name="share_title">Пригласить друга</string>
     <string name="comment_title">Комментарий</string>
@@ -8,7 +14,8 @@
     <string name="invite_message_toast">Сообщение для тоста отправки</string>
     <string name="no_alert_answer">Нет</string>
     <string name="yes_alert_answer">Да</string>
+    <string name="cancel_alert_answer">Отмена</string>
     <string name="not_save_data">Данные не сохранены</string>
     <string name="save_alert_title">Данные изменены</string>
-    <string name="save_alert_text">Хотите сохранить данные</string>
+    <string name="save_alert_text">Хотите сохранить данные?</string>
 </resources>

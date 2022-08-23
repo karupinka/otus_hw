@@ -1,114 +1,133 @@
 package ru.yandex.repinanr.movies.moviesList
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
-import ru.yandex.repinanr.movies.app.App.Companion.getIndex
-import ru.yandex.repinanr.movies.data.Const.CHOOSE_INDEX
-import ru.yandex.repinanr.movies.data.Const.MOVIE_COMMENT
-import ru.yandex.repinanr.movies.data.Const.MOVIE_FAVORITE
-import ru.yandex.repinanr.movies.data.Const.MOVIE_ID
+import ru.yandex.repinanr.movies.app.App
 import ru.yandex.repinanr.movies.data.Const.MOVIE_KEY
+import ru.yandex.repinanr.movies.data.Const.TAG_MOVIE_LIST_ACTIVITY
+import ru.yandex.repinanr.movies.data.DataModel
 import ru.yandex.repinanr.movies.data.DataSource
 import ru.yandex.repinanr.movies.databinding.ActivityMainBinding
+import ru.yandex.repinanr.movies.favoriteMovies.FavoriteMovieActivity
 import ru.yandex.repinanr.movies.moviesDetails.MovieDetailsActivity
 
 class MoviesListActivity : AppCompatActivity() {
     lateinit var mainBinding: ActivityMainBinding
     private var resultLauncher: ActivityResultLauncher<Intent>? = null
-    lateinit var adapter: MovieAdapter
     val dataSource = DataSource.getDataSource()
+    lateinit var adapter: MovieAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mainBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mainBinding.root)
         initAdapter()
+        initFavoriteButton()
+    }
 
-        dataSource.getMovieArrayList().observe(this) {
-            adapter.notifyDataSetChanged()
-        }
+    /**
+     * Init Adapter and RecyclerView
+     */
+    private fun initAdapter() {
+        mainBinding.apply {
+            adapter = MovieAdapter()
 
-        savedInstanceState?.let {
-            val value = handleState(it)
-            adapter.updateChooseMovieId(value)
-            adapter.notifyDataSetChanged()
+            resultLauncher =
+                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                    if (result.resultCode == RESULT_OK) {
+                        val bundle = result.data?.extras
+
+                        if (bundle != null) {
+                            val updateMovie = bundle.getSerializable(MOVIE_KEY) as DataModel.Movie
+                            val index = App.getIndex(updateMovie.movieId)
+                            adapter.updateMovie(updateMovie, index)
+                            Log.i(
+                                TAG_MOVIE_LIST_ACTIVITY,
+                                "isFavorite: ${updateMovie.isFavorite}; comment: ${updateMovie.comment}"
+                            )
+                        }
+                    }
+                }
+
+            adapter.setListener(object : MovieAdapter.MovieListener {
+                override fun onItemClickListener(movie: DataModel.Movie, position: Int) {
+                    adapterOnClick(movie)
+                    adapter.notifyDataSetChanged()
+                }
+
+                override fun onFavoriteClickListener(movie: DataModel.Movie, position: Int) {
+                    val updateMovie = DataModel.Movie(
+                        movieId = movie.movieId,
+                        name = movie.name,
+                        description = movie.description,
+                        image = movie.image,
+                        isFavorite = !movie.isFavorite,
+                        comment = movie.comment
+                    )
+                    adapter.updateMovie(updateMovie, position)
+                    dataSource.changeMovie(position, updateMovie)
+                }
+
+                override fun onRemoveClickListener(movie: DataModel.Movie, position: Int) {
+                    // DO NOTHING
+                }
+            })
+
+            adapter.setDataModel(getSourceArray())
+            rcMovie.adapter = adapter
+
+            val spanCount =
+                if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) 2 else 3
+            rcMovie.layoutManager = GridLayoutManager(this@MoviesListActivity, spanCount)
+
+            rcMovie.addItemDecoration(RecyclerViewItemDecoration())
+            rcMovie.itemAnimator = MovieItemAnimator()
         }
     }
 
-    /* Init RecyclerView */
-    private fun initAdapter() {
-        resultLauncher =
+    /**
+     * Set FavoriteButton clickListener
+     */
+    fun initFavoriteButton() {
+        val favoriteResultLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == RESULT_OK) {
-                    val bundle = result.data?.extras
-
-                    if (bundle != null) {
-                        val comment = bundle.getString(MOVIE_COMMENT) ?: ""
-                        val isFavorite = bundle.getBoolean(MOVIE_FAVORITE)
-                        val id = bundle.getInt(MOVIE_ID)
-
-                        dataSource.changeMovie(getIndex(id), comment, isFavorite)
-
-                        Log.i("Saved comment and isFavorite", "isFavorite: $isFavorite; comment: $comment")
-                    }
+                    adapter.setDataModel(getSourceArray())
+                } else {
+                    adapter.setDataModel(getSourceArray())
                 }
-                adapter.notifyDataSetChanged()
             }
 
-        mainBinding.apply {
-            rcMovie.layoutManager = GridLayoutManager(this@MoviesListActivity, 2)
-            adapter =
-                MovieAdapter { movie -> adapterOnClick(movie) }
-
-            rcMovie.adapter = adapter
-            rcMovie.layoutManager
+        mainBinding.favoriteBtn.setOnClickListener {
+            val intent = Intent(this, FavoriteMovieActivity()::class.java)
+            favoriteResultLauncher.launch(intent)
         }
     }
 
     /**
      * Opens MovieDetailActivity when RecyclerView item is clicked
      *
-     * @param [movie_id] Movie id
+     * @param [movie] Movie
      */
-    private fun adapterOnClick(movie_id: Int) {
+    private fun adapterOnClick(movie: DataModel.Movie) {
         val intent = Intent(this, MovieDetailsActivity()::class.java)
 
-        intent.putExtra(MOVIE_KEY, movie_id)
+        intent.putExtra(MOVIE_KEY, movie)
         resultLauncher?.launch(intent)
     }
 
     /**
-     * Save CHOOSE_INDEX movie state
-     *
-     * @param [outState] Bundle for save state
+     * Get Array with Movie data
      */
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        val value = adapter.getChooseMovieId()
-        outState.putInt(CHOOSE_INDEX, adapter.getChooseMovieId())
-    }
-
-    /**
-     * Restore InstanceState
-     *
-     * @param [savedInstanceState] Saved Instance
-     */
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-        Log.i("savedInstanceState", "${handleState(savedInstanceState)}")
-    }
-
-    /**
-     * Get CHOOSE_INDEX movie state
-     *
-     * @param [savedInstanceState] Saved Instance
-     */
-    private fun handleState(savedInstanceState: Bundle): Int {
-        return savedInstanceState.getInt(CHOOSE_INDEX, -1)
+    private fun getSourceArray(): ArrayList<DataModel> {
+        val array = arrayListOf<DataModel>()
+        dataSource.getMovieArrayList().value?.let { array.addAll(it) }
+        return array
     }
 }
