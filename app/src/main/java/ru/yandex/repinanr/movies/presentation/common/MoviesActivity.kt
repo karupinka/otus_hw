@@ -1,4 +1,4 @@
-package ru.yandex.repinanr.movies.moviesList
+package ru.yandex.repinanr.movies.presentation.common
 
 import android.os.Bundle
 import android.util.Log
@@ -9,11 +9,12 @@ import androidx.fragment.app.DialogFragment
 import ru.yandex.repinanr.movies.R
 import ru.yandex.repinanr.movies.data.Const
 import ru.yandex.repinanr.movies.databinding.ActivityMainBinding
-import ru.yandex.repinanr.movies.dialog.SaveDataDialog
-import ru.yandex.repinanr.movies.favoriteMovies.FavoriteMovieFragment
-import ru.yandex.repinanr.movies.moviesDetails.MoviesDetailFragment
+import ru.yandex.repinanr.movies.presentation.dialog.SaveDataDialog
+import ru.yandex.repinanr.movies.presentation.favoriteMovies.FavoriteMovieFragment
+import ru.yandex.repinanr.movies.presentation.moviesDetails.MoviesDetailFragment
+import ru.yandex.repinanr.movies.presentation.moviesList.MoviesListFragment
 
-class MoviesListActivity : AppCompatActivity(), SaveDataDialog.SaveDataDialogListener {
+class MoviesActivity : AppCompatActivity(), SaveDataDialog.SaveDataDialogListener {
     lateinit var mainBinding: ActivityMainBinding
     private var moviesListFragment: MoviesListFragment? = null
     private var favoriteMovieFragment: FavoriteMovieFragment? = null
@@ -114,10 +115,14 @@ class MoviesListActivity : AppCompatActivity(), SaveDataDialog.SaveDataDialogLis
         return supportFragmentManager.findFragmentByTag("Detail") as? MoviesDetailFragment
     }
 
+    private fun getMoviesListFragment(): MoviesListFragment? {
+        return supportFragmentManager.findFragmentByTag("Main") as? MoviesListFragment
+    }
+
     private fun setMoviesListFragmentToContainer() {
         moviesListFragment?.let {
             supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment, it)
+                .replace(R.id.fragment, it, "main")
                 .addToBackStack("main")
                 .commit()
         }

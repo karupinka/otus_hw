@@ -1,4 +1,4 @@
-package ru.yandex.repinanr.movies.favoriteMovies
+package ru.yandex.repinanr.movies.presentation.favoriteMovies
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,27 +6,30 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
 import ru.yandex.repinanr.movies.R
-import ru.yandex.repinanr.movies.data.DataModel
-import ru.yandex.repinanr.movies.data.DataSource
+import ru.yandex.repinanr.movies.app.App
+import ru.yandex.repinanr.movies.data.model.DataModel
 import ru.yandex.repinanr.movies.databinding.ActivityFavoriteMovieBinding
-import ru.yandex.repinanr.movies.moviesList.MovieAdapter
-import ru.yandex.repinanr.movies.moviesList.MovieItemAnimator
+import ru.yandex.repinanr.movies.presentation.common.MovieItemAnimator
+import ru.yandex.repinanr.movies.presentation.common.MovieListener
 
 class FavoriteMovieFragment: Fragment() {
-    private var adapter: MovieAdapter? = null
+    private var adapter: FavoriteMovieAdapter? = null
+    private lateinit var viewModel: FavoriteMovieViewModel
     private lateinit var binding: ActivityFavoriteMovieBinding
-    val dataSource = DataSource.getDataSource()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = ActivityFavoriteMovieBinding.inflate(layoutInflater, container, false)
         return binding.root
     }
@@ -34,12 +37,17 @@ class FavoriteMovieFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initAdapter()
-        dataSource.getMovieArrayList().observe(viewLifecycleOwner) {
-            adapter?.submitList(it.filter { it.isFavorite })
+        viewModel = ViewModelProvider(this, FavoriteViewModelFactory(App.instance))
+            .get(FavoriteMovieViewModel::class.java)
+        viewModel.moviesList.observe(viewLifecycleOwner) {
+            adapter?.submitList(it)
         }
         activity.let {
             val bottomNav = it?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
             bottomNav?.let { it.visibility = View.VISIBLE }
+        }
+        lifecycleScope.launch {
+            context?.let { viewModel.getFavoriteMovies(it) }
         }
     }
 
@@ -48,16 +56,16 @@ class FavoriteMovieFragment: Fragment() {
      */
     private fun initAdapter() {
         binding.apply {
-            adapter = MovieAdapter(isFavoriteActivity = true)
+            adapter = FavoriteMovieAdapter()
 
             adapter?.let {
-                it.setListener(object : MovieAdapter.MovieListener {
+                it.setListener(object : MovieListener {
                 override fun onFavoriteClickListener(movie: DataModel.Movie, position: Int) {
-                    removeMovie(it, movie, position)
+                    removeMovie(movie, position)
                 }
 
                 override fun onRemoveClickListener(movie: DataModel.Movie, position: Int) {
-                    removeMovie(it, movie, position)
+                    removeMovie(movie, position)
                 }
             })}
 
@@ -75,29 +83,12 @@ class FavoriteMovieFragment: Fragment() {
         }
     }
 
-    private fun removeMovie(adapter: MovieAdapter, movie: DataModel.Movie, position: Int) {
-        val updateMovie = DataModel.Movie(
-            movieId = movie.movieId,
-            name = movie.name,
-            description = movie.description,
-            image = movie.image,
-            isFavorite = false,
-            comment = movie.comment
-        )
-        dataSource.changeMovie(movie, updateMovie)
-
-        val snackbar = Snackbar.make(binding.root, R.string.toast_remove_favorite_text, Snackbar.LENGTH_LONG)
-        snackbar.setAction(R.string.cancel_alert_answer) {
-            val cancelMovie = DataModel.Movie(
-                movieId = movie.movieId,
-                name = movie.name,
-                description = movie.description,
-                image = movie.image,
-                isFavorite = true,
-                comment = movie.comment
-            )
-            dataSource.changeMovie(updateMovie, cancelMovie)
-        }
-        snackbar.show()
+    private fun removeMovie(movie: DataModel.Movie, position: Int) {
+            viewModel.removeFavoriteMovie(movie)
+            val snackbar = Snackbar.make(binding.root, R.string.toast_remove_favorite_text, Snackbar.LENGTH_LONG)
+            snackbar.setAction(R.string.cancel_alert_answer) {
+                viewModel.cancelFavoriteMoviesRemove(position)
+            }
+            snackbar.show()
     }
 }

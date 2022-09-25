@@ -1,16 +1,17 @@
-package ru.yandex.repinanr.movies.moviesList
+package ru.yandex.repinanr.movies.presentation.favoriteMovies
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import ru.yandex.repinanr.movies.R
-import ru.yandex.repinanr.movies.data.Const
-import ru.yandex.repinanr.movies.data.Const.NO_POSITION
-import ru.yandex.repinanr.movies.data.DataModel.Movie
+import ru.yandex.repinanr.movies.data.model.DataModel.Movie
+import ru.yandex.repinanr.movies.presentation.common.MovieItemDiffUtilCallback
+import ru.yandex.repinanr.movies.presentation.common.MovieListener
+import ru.yandex.repinanr.movies.presentation.common.MovieViewHolder
 
-class MovieAdapter(val isFavoriteActivity: Boolean = false) :
+class FavoriteMovieAdapter:
     ListAdapter<Movie, MovieViewHolder>(MovieItemDiffUtilCallback()) {
-    private lateinit var listener: MovieListener
+    private lateinit var listener:  MovieListener
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MovieViewHolder {
         val layout = when (viewType) {
@@ -22,7 +23,8 @@ class MovieAdapter(val isFavoriteActivity: Boolean = false) :
     }
 
     override fun onBindViewHolder(holder: MovieViewHolder, position: Int) {
-        holder.bind(getItem(position), position, listener, isFavoriteActivity)
+        val item = getItem(position)
+        holder.bind(item, position, listener, true)
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -35,17 +37,6 @@ class MovieAdapter(val isFavoriteActivity: Boolean = false) :
 
     fun setListener(listener: MovieListener) {
         this.listener = listener
-    }
-
-    interface MovieListener {
-        fun onFavoriteClickListener(movie: Movie, position: Int)
-        fun onItemClickListener(movie: Movie, position: Int) {
-            // DO NOTHING
-        }
-
-        fun onRemoveClickListener(movie: Movie, position: Int) {
-            // DO NOTHING
-        }
     }
 
     companion object {

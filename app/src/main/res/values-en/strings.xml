@@ -23,4 +23,10 @@
     <string name="not_save_data">Data has not saved</string>
     <string name="save_alert_title">Data changed</string>
     <string name="save_alert_text">Do you want to save data?</string>
+
+    <!-- Error -->
+    <string name="not_found_error_title">Movie not found</string>
+    <string name="limit_erorr_title">Too many response</string>
+    <string name="other_erorr_title">Something went wrong</string>
+    <string name="retry_error_button">Retry</string>
 </resources>

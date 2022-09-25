@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#E8E7E7"
-    tools:context=".moviesList.MoviesListActivity">
+    tools:context=".presentation.common.MoviesActivity">
 
     <FrameLayout
         android:id="@+id/fragment"

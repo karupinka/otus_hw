@@ -1,4 +1,4 @@
-package ru.yandex.repinanr.movies.dialog
+package ru.yandex.repinanr.movies.presentation.dialog
 
 import android.app.AlertDialog
 import android.app.Dialog

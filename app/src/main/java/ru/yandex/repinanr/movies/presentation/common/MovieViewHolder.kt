@@ -1,24 +1,24 @@
-package ru.yandex.repinanr.movies.moviesList
+package ru.yandex.repinanr.movies.presentation.common
 
 import android.view.View
 import android.view.View.VISIBLE
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import ru.yandex.repinanr.movies.R
 import ru.yandex.repinanr.movies.data.Const.NO_POSITION
-import ru.yandex.repinanr.movies.data.DataModel
-import ru.yandex.repinanr.movies.data.DataModel.Movie
+import ru.yandex.repinanr.movies.data.model.DataModel
+import ru.yandex.repinanr.movies.data.model.DataModel.Movie
 import ru.yandex.repinanr.movies.databinding.MovieItemBinding
 
 class MovieViewHolder(item: View): RecyclerView.ViewHolder(item) {
     private lateinit var movieItemBinding: MovieItemBinding
 
-    private fun bindMovie(item: Movie, position: Int, listener: MovieAdapter.MovieListener, isFavoriteActivity: Boolean) {
+    private fun bindMovie(item: Movie, position: Int, listener: MovieListener, isFavoriteActivity: Boolean) {
         movieItemBinding = MovieItemBinding.bind(itemView)
 
         with(movieItemBinding) {
-            ivMovieItemImg.setImageResource(item.image)
             tvMovieItmName.text = item.name
             tvRcDesription.text = item.description
 
@@ -30,14 +30,20 @@ class MovieViewHolder(item: View): RecyclerView.ViewHolder(item) {
             val csl = AppCompatResources.getColorStateList(itemView.context, favoriteColor)
             imageViewFavorite.imageTintList = csl
 
+            Glide.with(ivMovieItemImg)
+                .load(item.imageUrl)
+                .error(R.drawable.ic_error)
+                .centerCrop()
+                .into(ivMovieItemImg)
+
             ivMovieItemImg.setOnClickListener {
-                listener.onItemClickListener(item, position)
+                listener.onItemClickListener(item)
                 chooseItemPosition = position
                 val chooseListColor = ContextCompat.getColorStateList(itemView.context, R.color.purple_500)
                 tvMovieItmName.setTextColor(chooseListColor)
             }
             tvMovieItmName.setOnClickListener {
-                listener.onItemClickListener(item, position)
+                listener.onItemClickListener(item)
                 bindChooseItem(position)
             }
 
@@ -55,9 +61,11 @@ class MovieViewHolder(item: View): RecyclerView.ViewHolder(item) {
         }
     }
 
-    fun bind(dataModel: DataModel, position: Int, listener: MovieAdapter.MovieListener, isFavoriteActivity: Boolean = false) {
-        when(dataModel) {
-            is Movie -> bindMovie(dataModel, position, listener, isFavoriteActivity)
+    fun bind(dataModel: DataModel?, position: Int, listener: MovieListener, isFavoriteActivity: Boolean = false) {
+        dataModel?.let {
+            when(it) {
+                is Movie -> bindMovie(it, position, listener, isFavoriteActivity)
+            }
         }
     }
 

@@ -1,4 +1,4 @@
-package ru.yandex.repinanr.movies.moviesList
+package ru.yandex.repinanr.movies.presentation.common
 
 import android.view.animation.AnimationUtils
 import androidx.recyclerview.widget.DefaultItemAnimator
