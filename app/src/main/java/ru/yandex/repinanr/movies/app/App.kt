@@ -1,63 +1,40 @@
 package ru.yandex.repinanr.movies.app
 
 import android.app.Application
-import ru.yandex.repinanr.movies.R
-import ru.yandex.repinanr.movies.data.DataModel.Movie
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import ru.yandex.repinanr.movies.BuildConfig
+import ru.yandex.repinanr.movies.data.Const.BASE_URL
+import ru.yandex.repinanr.movies.data.network.service.MoviesService
 
 class App : Application() {
-    companion object {
-        // Map for get Movie id
-        val idIndexRelation = mapOf(
-            1 to 0,
-            2 to 1,
-            3 to 2,
-            4 to 3
-        )
+    lateinit var movieService: MoviesService
 
-        fun getIndex(id: Int) = App.idIndexRelation.get(id)
-            ?: throw ArrayIndexOutOfBoundsException("Movie doesn't exist")
+    override fun onCreate() {
+        super.onCreate()
+
+        val client = OkHttpClient.Builder()
+            .addInterceptor(HttpLoggingInterceptor().apply {
+                if (BuildConfig.DEBUG) {
+                    level = HttpLoggingInterceptor.Level.BODY
+                }
+            })
+            .build()
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        movieService = retrofit.create(MoviesService::class.java)
+        instance = this
+    }
+
+    companion object {
+        lateinit var instance: App
+            private set
     }
 }
-
-/**
- * Get initial array with Movies
- *
- * @return Movies array
- */
-fun getInitialMoviesArray() = arrayListOf(
-    Movie(
-        movieId = 1,
-        name = "1+1",
-        description = "Пострадав в результате несчастного случая, богатый аристократ Филипп нанимает в помощники человека, " +
-                "который менее всего подходит для этой работы, — молодого жителя предместья Дрисса, только что освободившегося из тюрьмы. " +
-                "Несмотря на то, что Филипп прикован к инвалидному креслу, Дриссу удается привнести в размеренную жизнь аристократа дух приключений.",
-        image = R.drawable.first,
-        isFavorite = true
-    ),
-    Movie(
-        movieId = 2,
-        name = "Флешбэк",
-        description = "За долгие годы работы наемный убийца самого высокого класса так и не утратил свой моральный компас. " +
-                "Получив новое задание, он принимает решение стать на сторону добра и устранить своих работодателей. " +
-                "Но его память начинает давать сбои, и киллер подвергает сомнению каждое свое действие. " +
-                "Грань между добром и злом стирается, остается лишь жажда мщения.",
-        image = R.drawable.second
-    ),
-    Movie(
-        movieId = 3,
-        name = "Гарри Поттер",
-        description = "Гарри Поттер провел десять лет своей одиннадцатилетней жизни в каморке под лестницей в доме тети и дяди, которым, очевидно, он совершенно не нравился. " +
-                "А потом, в один прекрасный день, великан пришел за ним: Гарри Поттер приглашен учиться в Хогварт, Школу Колдовства и Волшебства. " +
-                "И Гарри узнает, что существует два мира: один — скучный мир обыкновенных людей, которых волшебники зовут магглами, тот мир, где он вырос, и второй, магический мир, в котором ему предназначено жить...",
-        image = R.drawable.third
-    ),
-    Movie(
-        movieId = 4,
-        name = "Король Лев",
-        description = "У величественного короля-льва Муфасы рождается наследник — львенок по имени Симба. " +
-                "Уже в детстве любознательный малыш становится жертвой интриг своего завистливого дяди Шрама, мечтающего только о власти и готового ради этого на все. В течение мультфильма показан весь трудный путь маленького Симбы, от изгнания, борьбы, до осознания того, что значит быть настоящим Королем. " +
-                "Закаленный испытаниями, он познает горечь утраты, предательство и в нелегкой борьбе завоюет свое законное место в \"круге жизни\", а главное, обретет верных, беззаботных, озорных и крайне забавных друзей: Тимона и Пумбу. " +
-                "Вместе они пройдут весь путь Симбы под веселую песню \"Акуна Матата\", которая стала своеобразным гимном хорошего настроения.",
-        image = R.drawable.fourth
-    )
-)
