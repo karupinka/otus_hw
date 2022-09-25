@@ -7,9 +7,8 @@ import androidx.room.RoomDatabase
     entities = arrayOf(
         MovieEntity::class,
         CommentsEntity::class,
-        FavoriteMovieEntity::class,
-        RemoteKeysEntity::class
-    ), version = 2
+        FavoriteMovieEntity::class
+    ), version = 4
 )
 abstract class AppDb : RoomDatabase() {
     abstract fun getMovieDao(): MoviesDao
@@ -17,6 +16,4 @@ abstract class AppDb : RoomDatabase() {
     abstract fun getCommentsDao(): CommentsDao
 
     abstract fun getFavoriteMovieDao(): FavoriteMoviesDao
-
-    abstract fun getRemoteKeysDao(): RemoteKeysDao
 }

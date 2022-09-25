@@ -8,7 +8,6 @@ sealed class DataModel: Serializable {
         val movieId: Int,
         val name: String,
         val description: String = "",
-        @DrawableRes val image: Int = 0,
         val imageUrl: String? = null,
         val isFavorite: Boolean = false,
         val comment: String = ""

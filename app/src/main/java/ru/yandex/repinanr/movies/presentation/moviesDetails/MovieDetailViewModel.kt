@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 import ru.yandex.repinanr.movies.R
 import ru.yandex.repinanr.movies.data.model.DataModel
 import ru.yandex.repinanr.movies.data.repository.MoviesListRepositoryImpl
@@ -15,6 +16,7 @@ import ru.yandex.repinanr.movies.domain.*
 import ru.yandex.repinanr.movies.presentation.common.ApiCodeConst.LIMIT
 import ru.yandex.repinanr.movies.presentation.common.ApiCodeConst.NOT_FOUND
 import ru.yandex.repinanr.movies.presentation.common.ApiCodeConst.TOO_MANY_RESPONSES
+import java.net.UnknownHostException
 
 class MovieDetailViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = MoviesListRepositoryImpl
@@ -47,27 +49,36 @@ class MovieDetailViewModel(application: Application) : AndroidViewModel(applicat
 
     fun getMovie(id: Int) {
         GlobalScope.launch(Dispatchers.IO) {
-            val response = getMovieUseCase.getMovie(id)
+            try {
+                val response = getMovieUseCase.getMovie(id)
 
-            if (response.isSuccessful) {
-                response.body()?.let { movie ->
-                    val moviesItemTmp = DataModel.Movie(
-                        movieId = movie.id,
-                        name = movie.name ?: movie.nameEn ?: movie.nameOriginal ?: "No name",
-                        description = movie.description ?: "",
-                        imageUrl = movie.previewUrl,
-                        isFavorite = isFavorite
-                    )
-                    _moviesItem.postValue(moviesItemTmp)
-                    _loading.postValue(false)
+                if (response.isSuccessful) {
+                    response.body()?.let { movie ->
+                        val moviesItemTmp = DataModel.Movie(
+                            movieId = movie.id,
+                            name = movie.name ?: movie.nameEn ?: movie.nameOriginal ?: "No name",
+                            description = movie.description ?: "",
+                            imageUrl = movie.previewUrl,
+                            isFavorite = isFavorite
+                        )
+                        _moviesItem.postValue(moviesItemTmp)
+                        _loading.postValue(false)
+                    }
+                } else {
+                    val error = when (response.code()) {
+                        NOT_FOUND -> R.string.not_found_error_title
+                        LIMIT, TOO_MANY_RESPONSES -> R.string.limit_erorr_title
+                        else -> R.string.other_erorr_title
+                    }
+                    _errorMessage.postValue(context.getString(error))
+                    _loading.value = false
                 }
-            } else {
-                val error = when (response.code()) {
-                    NOT_FOUND -> R.string.not_found_error_title
-                    LIMIT, TOO_MANY_RESPONSES -> R.string.limit_erorr_title
-                    else -> R.string.other_erorr_title
-                }
-                onError(context.getString(error))
+            } catch (e: HttpException) {
+                _errorMessage.postValue(context.getString(R.string.internet_erorr_title))
+                _loading.postValue(false)
+            } catch (e: UnknownHostException) {
+                _errorMessage.postValue(context.getString(R.string.internet_erorr_title))
+                _loading.postValue(false)
             }
         }
     }
@@ -133,10 +144,5 @@ class MovieDetailViewModel(application: Application) : AndroidViewModel(applicat
     fun isMovieChanged(comment: String): Boolean {
         return comment != _commentMessage.value ||
                 isFavorite != (moviesItem.value?.isFavorite ?: false)
-    }
-
-    private fun onError(message: String) {
-        _errorMessage.postValue(message)
-        _loading.value = false
     }
 }

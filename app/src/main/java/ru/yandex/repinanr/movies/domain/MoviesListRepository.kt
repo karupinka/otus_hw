@@ -30,5 +30,5 @@ interface MoviesListRepository {
 
     suspend fun updateMovieComment(commentsEntity: CommentsEntity, context: Context)
 
-    fun fetchMoviesList(context: Context): LiveData<PagingData<DataModel.Movie>>
+    fun letMoviesList(context: Context): LiveData<PagingData<DataModel.Movie>>
 }

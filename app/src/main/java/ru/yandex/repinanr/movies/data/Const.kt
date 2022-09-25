@@ -8,8 +8,7 @@ object Const {
 
     const val NO_POSITION = -1
     const val BASE_URL = "https://kinopoiskapiunofficial.tech"
-    const val API_KEY = "be5c0ea8-4a9f-45c7-bd9c-9edd4df2dc69"
+    const val API_KEY = ""
 
-    const val DEFAULT_PAGE_INDEX = 1
     const val DEFAULT_PAGE_SIZE = 100
 }

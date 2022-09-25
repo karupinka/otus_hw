@@ -7,7 +7,6 @@ import androidx.paging.*
 import ru.yandex.repinanr.movies.app.App
 import ru.yandex.repinanr.movies.data.Const.DEFAULT_PAGE_SIZE
 import ru.yandex.repinanr.movies.data.model.DataModel
-import ru.yandex.repinanr.movies.data.model.MovieDataSource
 import ru.yandex.repinanr.movies.data.model.MovieRemoteMediator
 import ru.yandex.repinanr.movies.data.room.CommentsEntity
 import ru.yandex.repinanr.movies.data.room.Db
@@ -44,28 +43,15 @@ object MoviesListRepositoryImpl : MoviesListRepository {
         Db.getInstance(context)?.getCommentsDao()?.update(commentsEntity)
     }
 
-    override fun fetchMoviesList(context: Context): LiveData<PagingData<DataModel.Movie>> {
-        return Pager(
-            config = getDefaultPageConfig(),
-            pagingSourceFactory = {
-                MovieDataSource(
-                    App.instance.movieService,
-                    Db.getInstance(context)
-                )
-            }
-        ).liveData
-    }
-
     @OptIn(ExperimentalPagingApi::class)
-    fun letFlowDb(
-        pagingConfig: PagingConfig = getDefaultPageConfig(),
+    override fun letMoviesList(
         context: Context
     ): LiveData<PagingData<DataModel.Movie>> {
         val appDatabase = Db.getInstance(context)
         if (appDatabase == null) throw IllegalStateException("Database is not initialized")
 
         return Pager(
-            config = pagingConfig,
+            config = PagingConfig(pageSize = DEFAULT_PAGE_SIZE, enablePlaceholders = true),
             remoteMediator = MovieRemoteMediator(
                 service = App.instance.movieService,
                 appDatabase = appDatabase
@@ -77,14 +63,10 @@ object MoviesListRepositoryImpl : MoviesListRepository {
                     movieId = it.serviceId,
                     name = it.name,
                     imageUrl = it.imageUrl,
-                    description = it.description
+                    description = it.description,
+                    isFavorite = it.isFavoriteMovie == 1
                 )
             }
         }
-
-    }
-
-    fun getDefaultPageConfig(): PagingConfig {
-        return PagingConfig(pageSize = DEFAULT_PAGE_SIZE, enablePlaceholders = true)
     }
 }

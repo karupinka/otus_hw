@@ -17,5 +17,6 @@ data class MovieEntity(
     @ColumnInfo(name = "service_id") val serviceId: Int,
     val name: String,
     val description: String,
-    @ColumnInfo(name = "image_url") val imageUrl: String
+    @ColumnInfo(name = "image_url") val imageUrl: String,
+    @ColumnInfo(name = "is_favorite") val isFavoriteMovie: Int
 )

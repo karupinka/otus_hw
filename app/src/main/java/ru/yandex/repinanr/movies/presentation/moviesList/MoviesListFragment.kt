@@ -55,7 +55,6 @@ class MoviesListFragment : Fragment() {
             .get(MoviesListViewModel::class.java)
         lifecycleScope.launch {
             viewModel.fetchMoviesListLiveDataMediator()
-            //viewModel.fetchMoviesListLiveData()
             viewModel.moviesList.observe(viewLifecycleOwner) {
                 lifecycleScope.launch {
                     adapter?.submitData(it)
@@ -77,8 +76,8 @@ class MoviesListFragment : Fragment() {
             }
         }
         binding.swipeRefreshLayout.setOnRefreshListener {
-            binding.swipeRefreshLayout.isRefreshing = false
-            viewModel.fetchMoviesListLiveData()
+            binding.swipeRefreshLayout.isRefreshing = true
+            viewModel.fetchMoviesListLiveDataMediator()
         }
     }
 
@@ -132,7 +131,7 @@ class MoviesListFragment : Fragment() {
         val snackbar = Snackbar.make(binding.root, error, Snackbar.LENGTH_LONG)
         snackbar.setAction(R.string.retry_error_button) {
             lifecycleScope.launch {
-                viewModel.fetchMoviesListLiveData()
+                viewModel.fetchMoviesListLiveDataMediator()
             }
         }
         return snackbar

@@ -38,14 +38,8 @@ class MoviesListViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    fun fetchMoviesListLiveData() {
-        _moviesList = (repository.fetchMoviesList(context).cachedIn(viewModelScope)
-                as? MutableLiveData<PagingData<DataModel.Movie>>)
-            ?: MutableLiveData<PagingData<DataModel.Movie>>()
-    }
-
     fun fetchMoviesListLiveDataMediator() {
-        _moviesList = (repository.letFlowDb(context = context).cachedIn(viewModelScope)
+        _moviesList = (repository.letMoviesList(context = context).cachedIn(viewModelScope)
                 as? MutableLiveData<PagingData<DataModel.Movie>>)
             ?: MutableLiveData<PagingData<DataModel.Movie>>()
     }
