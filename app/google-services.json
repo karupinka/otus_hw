@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "887050448580",
+    "project_id": "movies-659f3",
+    "storage_bucket": "movies-659f3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:887050448580:android:77f3724b1c3219dae8a391",
+        "android_client_info": {
+          "package_name": "ru.yandex.repinanr.movies"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "887050448580-kdel5mjdgb62hoi4229nbeibs5fd45a3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDr2kzKpf2HUtS24cTQd4JIxjrNB0Dxz8E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "887050448580-kdel5mjdgb62hoi4229nbeibs5fd45a3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

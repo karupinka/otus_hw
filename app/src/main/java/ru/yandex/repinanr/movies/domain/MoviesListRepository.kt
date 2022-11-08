@@ -28,7 +28,5 @@ interface MoviesListRepository {
 
     suspend fun setMovieComment(commentsEntity: CommentsEntity, context: Context)
 
-    suspend fun updateMovieComment(commentsEntity: CommentsEntity, context: Context)
-
     fun letMoviesList(context: Context): LiveData<PagingData<DataModel.Movie>>
 }

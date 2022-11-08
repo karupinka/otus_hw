@@ -12,7 +12,7 @@ import ru.yandex.repinanr.movies.data.model.DataModel
 import ru.yandex.repinanr.movies.data.model.DataModel.Movie
 import ru.yandex.repinanr.movies.databinding.MovieItemBinding
 
-class MovieViewHolder(item: View): RecyclerView.ViewHolder(item) {
+class MovieViewHolder(val view: View): RecyclerView.ViewHolder(view) {
     private lateinit var movieItemBinding: MovieItemBinding
 
     private fun bindMovie(item: Movie, position: Int, listener: MovieListener, isFavoriteActivity: Boolean) {

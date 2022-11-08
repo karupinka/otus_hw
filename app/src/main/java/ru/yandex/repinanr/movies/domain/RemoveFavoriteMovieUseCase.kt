@@ -17,4 +17,8 @@ class RemoveFavoriteMovieUseCase(private val repository: MoviesListRepository) {
             )
         )
     }
+
+    suspend fun removeFavoriteMovie(movieId: Int, context: Context) {
+        Db.getInstance(context)?.getFavoriteMovieDao()?.delete(movieId)
+    }
 }

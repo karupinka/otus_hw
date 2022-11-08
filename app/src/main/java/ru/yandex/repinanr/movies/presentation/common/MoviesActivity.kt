@@ -2,147 +2,76 @@ package ru.yandex.repinanr.movies.presentation.common
 
 import android.os.Bundle
 import android.util.Log
+import android.view.MenuItem
+import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
+import androidx.navigation.NavController
+import androidx.navigation.Navigation
+import androidx.navigation.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.NavigationUI.setupWithNavController
+import androidx.navigation.ui.onNavDestinationSelected
+import androidx.navigation.ui.setupActionBarWithNavController
 import ru.yandex.repinanr.movies.R
 import ru.yandex.repinanr.movies.data.Const
 import ru.yandex.repinanr.movies.databinding.ActivityMainBinding
 import ru.yandex.repinanr.movies.presentation.dialog.SaveDataDialog
-import ru.yandex.repinanr.movies.presentation.favoriteMovies.FavoriteMovieFragment
-import ru.yandex.repinanr.movies.presentation.moviesDetails.MoviesDetailFragment
-import ru.yandex.repinanr.movies.presentation.moviesList.MoviesListFragment
+import ru.yandex.repinanr.movies.presentation.moviesList.MoviesListFragmentDirections
 
 class MoviesActivity : AppCompatActivity(), SaveDataDialog.SaveDataDialogListener {
     lateinit var mainBinding: ActivityMainBinding
-    private var moviesListFragment: MoviesListFragment? = null
-    private var favoriteMovieFragment: FavoriteMovieFragment? = null
-    private lateinit var detailFragment: MoviesDetailFragment
+    private lateinit var navController: NavController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mainBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mainBinding.root)
-        setBottomNav()
 
-        if (savedInstanceState == null) {
-            moviesListFragment = MoviesListFragment()
-            setMoviesListFragmentToContainer()
-        } else {
-            val fragment = supportFragmentManager.findFragmentById(R.id.fragment)
-            when (fragment) {
-                is MoviesListFragment -> {
-                    moviesListFragment = fragment
-                    setMoviesListFragmentToContainer()
-                }
-                is FavoriteMovieFragment -> {
-                    favoriteMovieFragment = fragment
-                    favoriteMovieFragment?.let {
-                        supportFragmentManager.beginTransaction()
-                            .replace(R.id.fragment, it)
-                            .commit()
-                    }
-                }
-                is MoviesDetailFragment -> {
-                    moviesListFragment = MoviesListFragment()
-                    detailFragment = fragment
-                    setMoviesListFragmentToContainer()
-                    supportFragmentManager.beginTransaction()
-                        .add(R.id.fragment, detailFragment)
-                        .commit()
-                }
-                else -> throw RuntimeException("Unknown fragment")
-            }
-        }
-    }
+        navController = Navigation.findNavController(this, R.id.fragment)
+        val appBarConfiguration = AppBarConfiguration
+            .Builder(R.id.moviesListFragment, R.id.favoriteMovieFragment)
+            .build()
+        setupActionBarWithNavController(navController, appBarConfiguration)
+        setupWithNavController(mainBinding.bottomNavigation, navController)
 
-    override fun onBackPressed() {
-        if (supportFragmentManager.backStackEntryCount > 0) {
-            if (isDetailFragment()) {
-                getDetailFragment()?.let {
-                    if (it.isMovieChanged()) {
-                        val dialog = SaveDataDialog()
-                        dialog.show(supportFragmentManager, "SaveDataDialog")
-                    } else {
-                        super.onBackPressed()
-                        mainBinding.bottomNavigation.visibility = VISIBLE
-                    }
-                }
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            if (destination.id == R.id.moviesDetailFragment) {
+                mainBinding.bottomNavigation.visibility = GONE
             } else {
-                supportFragmentManager.popBackStack()
                 mainBinding.bottomNavigation.visibility = VISIBLE
             }
-        } else {
-            super.onBackPressed()
-            mainBinding.bottomNavigation.visibility = VISIBLE
+        }
+
+        val value = intent?.extras?.get("id")?.toString() ?: ""
+        if (value.isNotEmpty()) {
+            findNavController(R.id.fragment).navigate(
+                MoviesListFragmentDirections.actionMoviesListFragmentToMoviesDetailFragment(
+                    value.toInt()
+                )
+            )
         }
     }
 
-    private fun isDetailFragment(): Boolean {
-        return if (supportFragmentManager.backStackEntryCount > 0) {
-            supportFragmentManager.getBackStackEntryAt(supportFragmentManager.backStackEntryCount - 1).name == "Detail"
-        } else {
-            false
-        }
-    }
-
-    private fun setBottomNav() {
-        mainBinding.bottomNavigation.setOnItemSelectedListener { itemMenu ->
-            when (itemMenu.itemId) {
-                R.id.nav_movies -> {
-                    if (moviesListFragment == null) {
-                        moviesListFragment = MoviesListFragment()
-                    }
-                    setMoviesListFragmentToContainer()
-                }
-                R.id.nav_favorite -> {
-                    if (favoriteMovieFragment == null) {
-                        favoriteMovieFragment = FavoriteMovieFragment()
-                    }
-                    favoriteMovieFragment?.let {
-                        supportFragmentManager.beginTransaction()
-                            .replace(R.id.fragment, it)
-                            .commit()
-                    }
-                }
-            }
-            true
-        }
-    }
-
-    private fun getDetailFragment(): MoviesDetailFragment? {
-        return supportFragmentManager.findFragmentByTag("Detail") as? MoviesDetailFragment
-    }
-
-    private fun getMoviesListFragment(): MoviesListFragment? {
-        return supportFragmentManager.findFragmentByTag("Main") as? MoviesListFragment
-    }
-
-    private fun setMoviesListFragmentToContainer() {
-        moviesListFragment?.let {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment, it, "main")
-                .addToBackStack("main")
-                .commit()
-        }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return item.onNavDestinationSelected(findNavController(R.id.fragment)) || super.onOptionsItemSelected(
+            item
+        )
     }
 
     override fun onDialogPositiveClick(dialog: DialogFragment) {
-        getDetailFragment()?.let {
-            it.updateMovie()
-        }
+        (dialog as SaveDataDialog).updateMovie()
         dialog.dismiss()
         Log.d(Const.TAG_DETAIL_ACTIVITY, "onDialogPositiveClick")
-        supportFragmentManager.popBackStack()
-        mainBinding.bottomNavigation.visibility = VISIBLE
+        findNavController(R.id.fragment).popBackStack(R.id.moviesDetailFragment, true)
     }
 
     override fun onDialogNegativeClick(dialog: DialogFragment) {
         Toast.makeText(this, R.string.not_save_data, Toast.LENGTH_LONG).show()
         dialog.dismiss()
         Log.d(Const.TAG_DETAIL_ACTIVITY, "onDialogNegativeClick")
-        supportFragmentManager.popBackStack()
-        mainBinding.bottomNavigation.visibility = VISIBLE
+        findNavController(R.id.fragment).popBackStack(R.id.moviesDetailFragment, true)
     }
 }

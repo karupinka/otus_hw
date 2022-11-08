@@ -39,10 +39,6 @@ object MoviesListRepositoryImpl : MoviesListRepository {
         Db.getInstance(context)?.getCommentsDao()?.insert(commentsEntity)
     }
 
-    override suspend fun updateMovieComment(commentsEntity: CommentsEntity, context: Context) {
-        Db.getInstance(context)?.getCommentsDao()?.update(commentsEntity)
-    }
-
     @OptIn(ExperimentalPagingApi::class)
     override fun letMoviesList(
         context: Context
