@@ -1,26 +1,29 @@
 package ru.yandex.repinanr.movies.data.room
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
 import androidx.room.OnConflictStrategy.REPLACE
+import androidx.room.Query
+import io.reactivex.Completable
+import io.reactivex.Flowable
+import io.reactivex.Observable
+import io.reactivex.Single
 
 @Dao
 interface FavoriteMoviesDao {
 
     @Insert(onConflict = REPLACE)
-    suspend fun insert(movie: FavoriteMovieEntity)
-
-    @Update(onConflict = REPLACE)
-    fun update(movie: FavoriteMovieEntity)
-
-    @Delete
-    suspend fun delete(movie: FavoriteMovieEntity)
+    fun insert(movie: FavoriteMovieEntity): Completable
 
     @Query("DELETE FROM favorite_movies WHERE service_id=:id")
-    suspend fun delete(id: Int)
+    fun delete(id: Int): Completable
 
     @Query("SELECT * FROM favorite_movies")
-    suspend fun getAllMovies(): List<FavoriteMovieEntity>
+    fun getAllMovies(): Observable<List<FavoriteMovieEntity>>
+
+    @Query("SELECT * FROM favorite_movies")
+    fun getAllMoviesSingle(): Single<List<FavoriteMovieEntity>>
 
     @Query("SELECT * FROM favorite_movies WHERE service_id=:id")
-    suspend fun getMovie(id: Int): FavoriteMovieEntity?
+    fun getMovie(id: Int): Flowable<List<FavoriteMovieEntity>>
 }

@@ -1,32 +1,33 @@
 package ru.yandex.repinanr.movies.domain
 
-import android.content.Context
-import androidx.lifecycle.LiveData
 import androidx.paging.PagingData
-import retrofit2.Response
-import ru.yandex.repinanr.movies.data.model.DataModel
+import io.reactivex.Completable
+import io.reactivex.Flowable
+import io.reactivex.Observable
+import io.reactivex.Single
+import ru.yandex.repinanr.movies.data.model.DataModel.Movie
 import ru.yandex.repinanr.movies.data.model.ItemResponse
-import ru.yandex.repinanr.movies.data.model.MovieResponse
-import ru.yandex.repinanr.movies.data.room.CommentsEntity
 import ru.yandex.repinanr.movies.data.room.FavoriteMovieEntity
 
 interface MoviesListRepository {
 
-    suspend fun getMovieItem(id: Int): Response<MovieResponse>
+    fun getMovieItem(id: Int, isFavorite: Boolean): Flowable<Movie>
 
-    suspend fun getMoviesList(page: Int): Response<ItemResponse>
+    fun getMoviesList(page: Int): Single<ItemResponse>
 
-    suspend fun getFavoriteMoviesList(context: Context): List<FavoriteMovieEntity>?
+    fun getFavoriteMoviesList(): Observable<List<Movie>>
 
-    suspend fun getFavoriteMovie(movieId: Int, context: Context): FavoriteMovieEntity?
+    fun getIsFavoriteMovie(movieId: Int): Flowable<Boolean>
 
-    suspend fun removeFavoriteMovie(movie: FavoriteMovieEntity, context: Context)
+    fun removeFavoriteMovie(movieId: Int): Completable
 
-    suspend fun addFavoriteMovie(movie: FavoriteMovieEntity, context: Context)
+    fun addFavoriteMovie(movie: Movie): Completable
 
-    suspend fun getMovieComment(movieId: Int, context: Context): CommentsEntity?
+    fun getMovieComment(movieId: Int): Flowable<String>
 
-    suspend fun setMovieComment(commentsEntity: CommentsEntity, context: Context)
+    fun setMovieComment(id: Int, comment: String): Completable
 
-    fun letMoviesList(context: Context): LiveData<PagingData<DataModel.Movie>>
+    fun letMoviesList(): Flowable<PagingData<Movie>>
+
+    fun getAllFavoriteMoviesSingle(): Single<List<FavoriteMovieEntity>>
 }

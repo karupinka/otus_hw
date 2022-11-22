@@ -2,9 +2,9 @@ package ru.yandex.repinanr.movies.domain
 
 import javax.inject.Inject
 
-class GetFavoriteMovieUseCase @Inject constructor(
+class LetMovieUseCase @Inject constructor(
     private val repository: MoviesListRepository
 ) {
 
-    operator fun invoke(id: Int) = repository.getIsFavoriteMovie(id)
+    operator fun invoke() = repository.letMoviesList()
 }

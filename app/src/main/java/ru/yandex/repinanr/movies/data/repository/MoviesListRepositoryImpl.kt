@@ -1,67 +1,70 @@
 package ru.yandex.repinanr.movies.data.repository
 
-import android.content.Context
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.map
+import android.annotation.SuppressLint
 import androidx.paging.*
-import ru.yandex.repinanr.movies.app.App
+import androidx.paging.rxjava2.flowable
+import io.reactivex.Completable
+import io.reactivex.Flowable
+import io.reactivex.Observable
+import io.reactivex.Single
 import ru.yandex.repinanr.movies.data.Const.DEFAULT_PAGE_SIZE
-import ru.yandex.repinanr.movies.data.model.DataModel
+import ru.yandex.repinanr.movies.data.model.DataModel.Movie
+import ru.yandex.repinanr.movies.data.model.MovieMapper
 import ru.yandex.repinanr.movies.data.model.MovieRemoteMediator
-import ru.yandex.repinanr.movies.data.room.CommentsEntity
-import ru.yandex.repinanr.movies.data.room.Db
-import ru.yandex.repinanr.movies.data.room.FavoriteMovieEntity
+import ru.yandex.repinanr.movies.data.network.service.MoviesService
+import ru.yandex.repinanr.movies.data.room.*
 import ru.yandex.repinanr.movies.domain.MoviesListRepository
+import javax.inject.Inject
 
-object MoviesListRepositoryImpl : MoviesListRepository {
-    override suspend fun getMovieItem(id: Int) = App.instance.movieService.getMovie(id)
+class MoviesListRepositoryImpl @Inject constructor(
+    private val moviesDao: MoviesDao,
+    private val commentsDao: CommentsDao,
+    private val favoriteMoviesDao: FavoriteMoviesDao,
+    private val service: MoviesService,
+    private val mapper: MovieMapper,
+    private val appDb: AppDb
+) : MoviesListRepository {
+    override fun getMovieItem(id: Int, isFavorite: Boolean) =
+        mapper.mapFlowableResponseToFlowableMovie(service.getMovie(id), isFavorite)
 
-    override suspend fun getMoviesList(page: Int) = App.instance.movieService.getMovies(page)
+    override fun getMoviesList(page: Int) = service.getMovies(page)
 
-    override suspend fun getFavoriteMoviesList(context: Context): List<FavoriteMovieEntity>? =
-        Db.getInstance(context)?.getFavoriteMovieDao()?.getAllMovies()
+    override fun getFavoriteMoviesList(): Observable<List<Movie>> =
+        mapper.mapObservableFavoriteListToObservableMovieList(favoriteMoviesDao.getAllMovies())
 
-    override suspend fun getFavoriteMovie(movieId: Int, context: Context): FavoriteMovieEntity? =
-        Db.getInstance(context)?.getFavoriteMovieDao()?.getMovie(movieId)
+    override fun getAllFavoriteMoviesSingle(): Single<List<FavoriteMovieEntity>> =
+        favoriteMoviesDao.getAllMoviesSingle()
 
-    override suspend fun removeFavoriteMovie(movie: FavoriteMovieEntity, context: Context) {
-        Db.getInstance(context)?.getFavoriteMovieDao()?.delete(movie)
-    }
+    override fun getIsFavoriteMovie(movieId: Int): Flowable<Boolean> =
+        favoriteMoviesDao.getMovie(movieId).map { it.isNotEmpty() }
 
-    override suspend fun addFavoriteMovie(movie: FavoriteMovieEntity, context: Context) {
-        Db.getInstance(context)?.getFavoriteMovieDao()?.insert(movie)
-    }
+    override fun removeFavoriteMovie(movieId: Int) = favoriteMoviesDao.delete(movieId)
 
-    override suspend fun getMovieComment(movieId: Int, context: Context): CommentsEntity? =
-        Db.getInstance(context)?.getCommentsDao()?.getMovie(movieId)
+    override fun addFavoriteMovie(movie: Movie): Completable =
+        favoriteMoviesDao.insert(mapper.mapMovieToEntity(movie))
 
-    override suspend fun setMovieComment(commentsEntity: CommentsEntity, context: Context) {
-        Db.getInstance(context)?.getCommentsDao()?.insert(commentsEntity)
-    }
+    @SuppressLint("CheckResult")
+    override fun getMovieComment(movieId: Int): Flowable<String>  = commentsDao.getComment(movieId)
+        .map { if(it.isEmpty()) "" else it.first().comment }
+
+    override fun setMovieComment(id: Int, comment: String) =
+        commentsDao.insert(mapper.mapStringToComment(id, comment))
 
     @OptIn(ExperimentalPagingApi::class)
-    override fun letMoviesList(
-        context: Context
-    ): LiveData<PagingData<DataModel.Movie>> {
-        val appDatabase = Db.getInstance(context)
-        if (appDatabase == null) throw IllegalStateException("Database is not initialized")
-
+    override fun letMoviesList(): Flowable<PagingData<Movie>> {
         return Pager(
             config = PagingConfig(pageSize = DEFAULT_PAGE_SIZE, enablePlaceholders = true),
             remoteMediator = MovieRemoteMediator(
-                service = App.instance.movieService,
-                appDatabase = appDatabase
+                service = service,
+                moviesDao = moviesDao,
+                favoriteMoviesDao = favoriteMoviesDao,
+                mapper = mapper,
+                appDb = appDb
             ),
-            pagingSourceFactory = { appDatabase.getMovieDao().getAllMovies() }
-        ).liveData.map { pagingData ->
+            pagingSourceFactory = { moviesDao.getAllMovies() }
+        ).flowable.map { pagingData ->
             pagingData.map {
-                DataModel.Movie(
-                    movieId = it.serviceId,
-                    name = it.name,
-                    imageUrl = it.imageUrl,
-                    description = it.description,
-                    isFavorite = it.isFavoriteMovie == 1
-                )
+                mapper.mapEntityToMovie(it)
             }
         }
     }

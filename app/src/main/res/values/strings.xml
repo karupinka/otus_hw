@@ -27,6 +27,7 @@
     <string name="not_found_error_title">Фильм не найден</string>
     <string name="limit_erorr_title">Лимит запросов превышен</string>
     <string name="other_erorr_title">Что-то пошло не так</string>
+    <string name="internet_erorr_title">Ошибка интернета</string>
     <string name="retry_error_button">Повторить</string>
 
     <!-- Watch Later -->

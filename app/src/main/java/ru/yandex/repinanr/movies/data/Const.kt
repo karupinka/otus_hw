@@ -6,8 +6,6 @@ object Const {
     const val TAG_DETAIL_ACTIVITY_MOVIE = "DetailActivity_movie"
 
     const val NO_POSITION = -1
-    const val BASE_URL = "https://kinopoiskapiunofficial.tech"
-    const val API_KEY = ""
 
     const val DEFAULT_PAGE_SIZE = 100
 }

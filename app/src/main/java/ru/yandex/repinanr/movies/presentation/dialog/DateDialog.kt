@@ -19,9 +19,10 @@ import ru.yandex.repinanr.movies.app.App
 import ru.yandex.repinanr.movies.databinding.DateDialogFragmentBinding
 import ru.yandex.repinanr.movies.services.AlarmReceiver
 import java.util.*
+import javax.inject.Inject
 
 
-class DateDialog : DialogFragment() {
+class DateDialog @Inject constructor() : DialogFragment() {
     private val args by navArgs<DateDialogArgs>()
 
     private var itemTime: Int = Calendar.SECOND

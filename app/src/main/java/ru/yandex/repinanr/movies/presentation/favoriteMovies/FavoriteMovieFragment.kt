@@ -1,5 +1,6 @@
 package ru.yandex.repinanr.movies.presentation.favoriteMovies
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,24 +8,36 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.launch
 import ru.yandex.repinanr.movies.R
 import ru.yandex.repinanr.movies.app.App
 import ru.yandex.repinanr.movies.data.model.DataModel
 import ru.yandex.repinanr.movies.databinding.ActivityFavoriteMovieBinding
+import ru.yandex.repinanr.movies.presentation.ViewModelFactory
 import ru.yandex.repinanr.movies.presentation.common.MovieItemAnimator
 import ru.yandex.repinanr.movies.presentation.common.MovieListener
 import ru.yandex.repinanr.movies.presentation.dialog.DateDialog
+import javax.inject.Inject
 
 class FavoriteMovieFragment : Fragment() {
     private var adapter: FavoriteMovieAdapter? = null
     private lateinit var viewModel: FavoriteMovieViewModel
     private lateinit var binding: ActivityFavoriteMovieBinding
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
+
+    private val component by lazy {
+        (requireActivity().application as App).component
+    }
+
+    override fun onAttach(context: Context) {
+        component.inject(this)
+        super.onAttach(context)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,7 +51,7 @@ class FavoriteMovieFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initAdapter()
-        viewModel = ViewModelProvider(this, FavoriteViewModelFactory(App.instance))
+        viewModel = ViewModelProvider(this, viewModelFactory)
             .get(FavoriteMovieViewModel::class.java)
         viewModel.moviesList.observe(viewLifecycleOwner) {
             adapter?.submitList(it)
@@ -47,9 +60,14 @@ class FavoriteMovieFragment : Fragment() {
             val bottomNav = it?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
             bottomNav?.let { it.visibility = View.VISIBLE }
         }
-        lifecycleScope.launch {
-            context?.let { viewModel.getFavoriteMovies(it) }
+        viewModel.errorMessage.observe(viewLifecycleOwner) {
+            val snackbar = Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG)
+            snackbar.setAction(R.string.retry_error_button) {
+                viewModel.getFavoriteMovies()
+            }
+            snackbar.show()
         }
+        viewModel.getFavoriteMovies()
     }
 
     /**

@@ -1,11 +1,12 @@
 package ru.yandex.repinanr.movies.domain
 
-import retrofit2.Response
+import io.reactivex.Single
 import ru.yandex.repinanr.movies.data.model.ItemResponse
+import javax.inject.Inject
 
-class GetMoviesListUseCase(private val repository: MoviesListRepository) {
+class GetMoviesListUseCase @Inject constructor(
+    private val repository: MoviesListRepository
+) {
 
-    suspend fun getMoviesList(page: Int): Response<ItemResponse> {
-        return repository.getMoviesList(page)
-    }
+    operator fun invoke(page: Int): Single<ItemResponse> = repository.getMoviesList(page)
 }

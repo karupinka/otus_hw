@@ -1,6 +1,7 @@
 package ru.yandex.repinanr.movies.presentation.moviesDetails
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -12,23 +13,35 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.launch
 import ru.yandex.repinanr.movies.R
 import ru.yandex.repinanr.movies.app.App
 import ru.yandex.repinanr.movies.data.model.DataModel
 import ru.yandex.repinanr.movies.databinding.MovieDetailsBinding
+import ru.yandex.repinanr.movies.presentation.ViewModelFactory
+import javax.inject.Inject
 
 class MoviesDetailFragment : Fragment() {
     private val args by navArgs<MoviesDetailFragmentArgs>()
 
     private lateinit var viewModel: MovieDetailViewModel
     private lateinit var binding: MovieDetailsBinding
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
+
+    private val component by lazy {
+        (requireActivity().application as App).component
+    }
+
+    override fun onAttach(context: Context) {
+        component.inject(this)
+        super.onAttach(context)
+    }
 
     private val shareLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -57,7 +70,7 @@ class MoviesDetailFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProvider(this, MovieDetailsViewModelFactory(App.instance))
+        viewModel = ViewModelProvider(this, viewModelFactory)
             .get(MovieDetailViewModel::class.java)
         viewModel.moviesItem.observe(viewLifecycleOwner) {
             with(binding) {
@@ -76,7 +89,7 @@ class MoviesDetailFragment : Fragment() {
         viewModel.errorMessage.observe(viewLifecycleOwner) {
             val snackbar = Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG)
             snackbar.setAction(R.string.retry_error_button) {
-                viewModel.getMovie(args.id)
+                viewModel.loadMovie(args.id)
             }
             snackbar.show()
         }
@@ -92,11 +105,7 @@ class MoviesDetailFragment : Fragment() {
             }
         }
 
-        lifecycleScope.launch {
-            viewModel.getFavoriteMovie(args.id)
-            viewModel.getMovie(args.id)
-            viewModel.getMovieComment(args.id)
-        }
+        viewModel.loadMovie(args.id)
 
         binding.favoriteBtn.setOnClickListener {
             viewModel.changeFavoriteMovieItem()

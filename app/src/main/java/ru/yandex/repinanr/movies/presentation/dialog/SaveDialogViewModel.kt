@@ -1,22 +1,22 @@
 package ru.yandex.repinanr.movies.presentation.dialog
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import android.util.Log
+import androidx.lifecycle.ViewModel
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
 import ru.yandex.repinanr.movies.data.model.DataModel
-import ru.yandex.repinanr.movies.data.repository.MoviesListRepositoryImpl
 import ru.yandex.repinanr.movies.domain.AddFavoriteMovieUseCase
 import ru.yandex.repinanr.movies.domain.InsertCommentMovieUseCase
 import ru.yandex.repinanr.movies.domain.RemoveFavoriteMovieUseCase
+import javax.inject.Inject
 
-class SaveDialogViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = MoviesListRepositoryImpl
-    private val context = getApplication<Application>().applicationContext
-    private val addFavoriteMovieUseCase = AddFavoriteMovieUseCase(repository)
-    private val removeFavoriteMovieUseCase = RemoveFavoriteMovieUseCase(repository)
-    private val insertCommentMovieUseCase = InsertCommentMovieUseCase(repository)
+class SaveDialogViewModel @Inject constructor(
+    private val addFavoriteMovieUseCase: AddFavoriteMovieUseCase,
+    private val removeFavoriteMovieUseCase: RemoveFavoriteMovieUseCase,
+    private val insertCommentMovieUseCase: InsertCommentMovieUseCase
+) : ViewModel() {
+    private val mDisposable = CompositeDisposable()
 
     fun addDeleteFavoriteMovieDB(movie: DataModel.Movie, oldIsFavorite: Boolean) {
         if (movie.isFavorite != oldIsFavorite) {
@@ -29,20 +29,49 @@ class SaveDialogViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun addFavoriteMovie(movie: DataModel.Movie) {
-        viewModelScope.launch(Dispatchers.IO) {
-            addFavoriteMovieUseCase.addFavoriteMovie(movie, context)
-        }
+        mDisposable.add(addFavoriteMovieUseCase(movie)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({
+                Log.d(TAG, "addFavoriteMovie success")
+            }, {
+                Log.d(TAG, "addFavoriteMovie error ${it.message}")
+            })
+        )
     }
 
     fun deleteFavoriteMovie(id: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
-            removeFavoriteMovieUseCase.removeFavoriteMovie(id, context)
-        }
+        mDisposable.add(
+            removeFavoriteMovieUseCase(id)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                    Log.d(TAG, "deleteFavoriteMovie success")
+                }, {
+                    Log.d(TAG, "deleteFavoriteMovie error ${it.message}")
+                })
+        )
     }
 
     fun saveMovieComment(movieId: Int, comment: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            insertCommentMovieUseCase.insertMovieComment(movieId, comment, context)
-        }
+        mDisposable.add(
+            insertCommentMovieUseCase(movieId, comment)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                    Log.d(TAG, "saveMovieComment success")
+                }, {
+                    Log.d(TAG, "saveMovieComment error ${it.message}")
+                })
+        )
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        mDisposable.dispose()
+    }
+
+    companion object {
+        private const val TAG = "SaveDialogViewModel"
     }
 }
