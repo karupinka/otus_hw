@@ -1,6 +1,5 @@
 package ru.yandex.repinanr.movies.data.model
 
-import androidx.annotation.DrawableRes
 import java.io.Serializable
 
 sealed class DataModel: Serializable {

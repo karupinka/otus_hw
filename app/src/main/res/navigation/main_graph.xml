@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_graph"
+    app:startDestination="@id/moviesListFragment">
+
+    <fragment
+        android:id="@+id/moviesListFragment"
+        android:name="ru.yandex.repinanr.movies.presentation.moviesList.MoviesListFragment"
+        android:label="MoviesListFragment" >
+        <action
+            android:id="@+id/action_moviesListFragment_to_moviesDetailFragment"
+            app:destination="@id/moviesDetailFragment" />
+        <action
+            android:id="@+id/action_moviesListFragment_to_dateDialog"
+            app:destination="@id/dateDialog" />
+    </fragment>
+    <fragment
+        android:id="@+id/favoriteMovieFragment"
+        android:name="ru.yandex.repinanr.movies.presentation.favoriteMovies.FavoriteMovieFragment"
+        android:label="FavoriteMovieFragment" />
+    <fragment
+        android:id="@+id/moviesDetailFragment"
+        android:name="ru.yandex.repinanr.movies.presentation.moviesDetails.MoviesDetailFragment"
+        android:label="MoviesDetailFragment" >
+        <argument
+            android:name="id"
+            app:argType="integer" />
+        <action
+            android:id="@+id/action_moviesDetailFragment_to_saveDataDialog"
+            app:destination="@id/saveDataDialog" />
+        <action
+            android:id="@+id/action_moviesDetailFragment_to_dateDialog"
+            app:destination="@id/dateDialog" />
+        <action
+            android:id="@+id/action_moviesDetailFragment_to_moviesListFragment"
+            app:destination="@id/moviesListFragment" />
+    </fragment>
+    <dialog
+        android:id="@+id/saveDataDialog"
+        android:name="ru.yandex.repinanr.movies.presentation.dialog.SaveDataDialog"
+        android:label="SaveDataDialog" >
+        <action
+            android:id="@+id/action_saveDataDialog_to_moviesListFragment"
+            app:destination="@id/moviesListFragment" />
+        <argument
+            android:name="comment"
+            app:argType="string" />
+        <argument
+            android:name="oldIsFavorite"
+            app:argType="boolean" />
+        <argument
+            android:name="movie"
+            app:argType="ru.yandex.repinanr.movies.data.model.DataModel$Movie" />
+    </dialog>
+    <dialog
+        android:id="@+id/dateDialog"
+        android:name="ru.yandex.repinanr.movies.presentation.dialog.DateDialog"
+        android:label="DateDialog" >
+        <argument
+            android:name="movieId"
+            app:argType="integer" />
+    </dialog>
+</navigation>

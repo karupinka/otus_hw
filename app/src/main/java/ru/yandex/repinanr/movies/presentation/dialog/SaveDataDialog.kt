@@ -7,10 +7,17 @@ import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.navArgs
+import ru.yandex.repinanr.movies.app.App
 import ru.yandex.repinanr.movies.data.Const.TAG_SAVE_DIALOG
 import ru.yandex.repinanr.movies.databinding.SaveDialogFragmentBinding
 
 class SaveDataDialog: DialogFragment() {
+    private val args by navArgs<SaveDataDialogArgs>()
+
+    private lateinit var viewModel: SaveDialogViewModel
+
     lateinit var saveDialogFragmentBinding: SaveDialogFragmentBinding
     internal lateinit var listener: SaveDataDialogListener
 
@@ -24,6 +31,9 @@ class SaveDataDialog: DialogFragment() {
         val dialog = AlertDialog.Builder(requireActivity())
             .setView(saveDialogFragmentBinding.root)
             .create()
+
+        viewModel = ViewModelProvider(this, SaveDialogViewModelFactory(App.instance))
+            .get(SaveDialogViewModel::class.java)
 
         with(saveDialogFragmentBinding) {
             dialogYesButton.setOnClickListener {
@@ -55,5 +65,10 @@ class SaveDataDialog: DialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         isCancelable = false
+    }
+
+    fun updateMovie() {
+        viewModel.addDeleteFavoriteMovieDB(args.movie, args.oldIsFavorite)
+        viewModel.saveMovieComment(args.movie.movieId, args.comment)
     }
 }

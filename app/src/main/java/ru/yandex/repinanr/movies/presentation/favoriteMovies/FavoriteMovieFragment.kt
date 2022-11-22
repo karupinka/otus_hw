@@ -19,8 +19,9 @@ import ru.yandex.repinanr.movies.data.model.DataModel
 import ru.yandex.repinanr.movies.databinding.ActivityFavoriteMovieBinding
 import ru.yandex.repinanr.movies.presentation.common.MovieItemAnimator
 import ru.yandex.repinanr.movies.presentation.common.MovieListener
+import ru.yandex.repinanr.movies.presentation.dialog.DateDialog
 
-class FavoriteMovieFragment: Fragment() {
+class FavoriteMovieFragment : Fragment() {
     private var adapter: FavoriteMovieAdapter? = null
     private lateinit var viewModel: FavoriteMovieViewModel
     private lateinit var binding: ActivityFavoriteMovieBinding
@@ -60,14 +61,19 @@ class FavoriteMovieFragment: Fragment() {
 
             adapter?.let {
                 it.setListener(object : MovieListener {
-                override fun onFavoriteClickListener(movie: DataModel.Movie, position: Int) {
-                    removeMovie(movie, position)
-                }
+                    override fun onFavoriteClickListener(movie: DataModel.Movie, position: Int) {
+                        removeMovie(movie, position)
+                    }
 
-                override fun onRemoveClickListener(movie: DataModel.Movie, position: Int) {
-                    removeMovie(movie, position)
-                }
-            })}
+                    override fun onRemoveClickListener(movie: DataModel.Movie, position: Int) {
+                        removeMovie(movie, position)
+                    }
+
+                    override fun onWatchLaterListener() {
+                        DateDialog().show(parentFragmentManager, "DateDialog")
+                    }
+                })
+            }
 
             rcFavorite.adapter = adapter
 
@@ -84,11 +90,12 @@ class FavoriteMovieFragment: Fragment() {
     }
 
     private fun removeMovie(movie: DataModel.Movie, position: Int) {
-            viewModel.removeFavoriteMovie(movie)
-            val snackbar = Snackbar.make(binding.root, R.string.toast_remove_favorite_text, Snackbar.LENGTH_LONG)
-            snackbar.setAction(R.string.cancel_alert_answer) {
-                viewModel.cancelFavoriteMoviesRemove(position)
-            }
-            snackbar.show()
+        viewModel.removeFavoriteMovie(movie)
+        val snackbar =
+            Snackbar.make(binding.root, R.string.toast_remove_favorite_text, Snackbar.LENGTH_LONG)
+        snackbar.setAction(R.string.cancel_alert_answer) {
+            viewModel.cancelFavoriteMoviesRemove(position)
+        }
+        snackbar.show()
     }
 }

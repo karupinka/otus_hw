@@ -10,6 +10,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -25,7 +26,7 @@ import ru.yandex.repinanr.movies.databinding.MoviesRecycleBinding
 import ru.yandex.repinanr.movies.presentation.common.MovieItemAnimator
 import ru.yandex.repinanr.movies.presentation.common.MovieListener
 import ru.yandex.repinanr.movies.presentation.common.RecyclerViewItemDecoration
-import ru.yandex.repinanr.movies.presentation.moviesDetails.MoviesDetailFragment
+import ru.yandex.repinanr.movies.presentation.dialog.DateDialog
 
 class MoviesListFragment : Fragment() {
     private lateinit var viewModel: MoviesListViewModel
@@ -91,14 +92,10 @@ class MoviesListFragment : Fragment() {
                 with(it) {
                     setListener(object : MovieListener {
                         override fun onItemClickListener(movie: DataModel.Movie) {
-                            parentFragmentManager.beginTransaction()
-                                .add(
-                                    R.id.fragment,
-                                    MoviesDetailFragment.newInstance(movie.movieId),
-                                    "Detail"
-                                )
-                                .addToBackStack("Detail")
-                                .commit()
+                            findNavController().navigate(
+                                MoviesListFragmentDirections
+                                    .actionMoviesListFragmentToMoviesDetailFragment(movie.movieId)
+                            )
                         }
 
                         override fun onFavoriteClickListener(
@@ -110,6 +107,10 @@ class MoviesListFragment : Fragment() {
                             } else {
                                 viewModel.addFavoriteMovie(movie)
                             }
+                        }
+
+                        override fun onWatchLaterListener() {
+                            DateDialog().show(parentFragmentManager, "DateDialog")
                         }
                     })
 

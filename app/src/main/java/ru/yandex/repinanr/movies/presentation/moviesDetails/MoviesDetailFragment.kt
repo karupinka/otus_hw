@@ -7,25 +7,27 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import ru.yandex.repinanr.movies.R
 import ru.yandex.repinanr.movies.app.App
-import ru.yandex.repinanr.movies.data.Const.MOVIE_KEY
-import ru.yandex.repinanr.movies.data.Const.TAG_DETAIL_ACTIVITY
-import ru.yandex.repinanr.movies.data.Const.TAG_DETAIL_ACTIVITY_MOVIE
+import ru.yandex.repinanr.movies.data.model.DataModel
 import ru.yandex.repinanr.movies.databinding.MovieDetailsBinding
 
 class MoviesDetailFragment : Fragment() {
+    private val args by navArgs<MoviesDetailFragmentArgs>()
+
     private lateinit var viewModel: MovieDetailViewModel
-    private var movieId: Int = 0
     private lateinit var binding: MovieDetailsBinding
 
     private val shareLauncher =
@@ -39,11 +41,6 @@ class MoviesDetailFragment : Fragment() {
                 toast.show()
             }
         }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        movieId = requireArguments().getInt(MOVIE_KEY)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -79,7 +76,7 @@ class MoviesDetailFragment : Fragment() {
         viewModel.errorMessage.observe(viewLifecycleOwner) {
             val snackbar = Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG)
             snackbar.setAction(R.string.retry_error_button) {
-                viewModel.getMovie(movieId)
+                viewModel.getMovie(args.id)
             }
             snackbar.show()
         }
@@ -96,13 +93,20 @@ class MoviesDetailFragment : Fragment() {
         }
 
         lifecycleScope.launch {
-            viewModel.getFavoriteMovie(movieId)
-            viewModel.getMovie(movieId)
-            viewModel.getMovieComment(movieId)
+            viewModel.getFavoriteMovie(args.id)
+            viewModel.getMovie(args.id)
+            viewModel.getMovieComment(args.id)
         }
 
         binding.favoriteBtn.setOnClickListener {
             viewModel.changeFavoriteMovieItem()
+        }
+
+        binding.btnWatchLater.setOnClickListener {
+            findNavController().navigate(
+                MoviesDetailFragmentDirections
+                    .actionMoviesDetailFragmentToDateDialog(args.id)
+            )
         }
 
         binding.btnShare.setOnClickListener {
@@ -115,35 +119,37 @@ class MoviesDetailFragment : Fragment() {
             val shareIntent: Intent = Intent.createChooser(sendIntent, null)
             shareLauncher.launch(shareIntent)
         }
-    }
 
-    fun updateMovie() {
-        with(binding) {
-            val comment = (etComment.text ?: "").toString()
-            if (viewModel.isMovieChanged(comment)) {
-                viewModel.saveMovieComment(movieId, comment)
-                viewModel.addDeleteFavoriteMovieDB()
-                val bundle = Bundle()
-                bundle.putSerializable(TAG_DETAIL_ACTIVITY_MOVIE, viewModel.moviesItem.value)
-                parentFragmentManager.setFragmentResult(TAG_DETAIL_ACTIVITY, bundle)
+        val callback = object : OnBackPressedCallback(
+            true
+        ) {
+            override fun handleOnBackPressed() {
+                if (isMovieChanged()) {
+                    val comment = (binding.etComment.text ?: "").toString()
+
+                    findNavController().navigate(
+                        MoviesDetailFragmentDirections
+                            .actionMoviesDetailFragmentToSaveDataDialog(
+                                comment,
+                                viewModel.isFavorite,
+                                viewModel.moviesItem.value as DataModel.Movie
+                            )
+                    )
+                } else {
+                    findNavController().popBackStack()
+                }
             }
         }
+        requireActivity().getOnBackPressedDispatcher().addCallback(
+            viewLifecycleOwner,
+            callback
+        )
     }
 
     fun isMovieChanged(): Boolean {
         with(binding) {
             val comment = (etComment.text ?: "").toString()
             return viewModel.isMovieChanged(comment)
-        }
-    }
-
-    companion object {
-        fun newInstance(movieId: Int): MoviesDetailFragment {
-            val args = Bundle()
-            args.putSerializable(MOVIE_KEY, movieId)
-            val fragment = MoviesDetailFragment()
-            fragment.arguments = args
-            return fragment
         }
     }
 }

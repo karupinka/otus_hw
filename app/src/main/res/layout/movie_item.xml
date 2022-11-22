@@ -10,6 +10,7 @@
         android:id="@+id/image_view_favorite"
         android:layout_width="32dp"
         android:layout_height="32dp"
+        android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/image_view_remove"

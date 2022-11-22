@@ -2,11 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/nav_movies"
+        android:id="@+id/moviesListFragment"
         android:icon="@drawable/ic_movies_main"
-        android:title="@string/app_name" />
+        android:title="@string/app_name"
+        android:visible="true" />
     <item
-        android:id="@+id/nav_favorite"
+        android:id="@+id/favoriteMovieFragment"
         android:icon="@drawable/ic_favorite"
         android:title="@string/favorite_button_text" />
 </menu>

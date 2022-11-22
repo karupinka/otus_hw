@@ -15,8 +15,6 @@ import ru.yandex.repinanr.movies.domain.RemoveFavoriteMovieUseCase
 
 class FavoriteMovieViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = MoviesListRepositoryImpl
-    private val context = getApplication<Application>().applicationContext
-
     private val _moviesList = MutableLiveData<List<DataModel.Movie>>(listOf())
     val moviesList: LiveData<List<DataModel.Movie>>
         get() = _moviesList
@@ -48,20 +46,24 @@ class FavoriteMovieViewModel(application: Application) : AndroidViewModel(applic
     fun removeFavoriteMovie(movie: DataModel.Movie) {
         viewModelScope.launch {
             movieRemoved = movie
-            removeFavoriteMovieUseCase.removeFavoriteMovie(movie, context)
+            removeFavoriteMovieUseCase.removeFavoriteMovie(movie, getApplication())
             val currentList = moviesList.value?.toMutableList()
-            currentList?.remove(movie)
-            _moviesList.postValue(currentList)
+            currentList?.let {
+                it.remove(movie)
+                _moviesList.postValue(it)
+            }
         }
     }
 
     fun cancelFavoriteMoviesRemove(position: Int) {
         viewModelScope.launch {
             movieRemoved?.let { movie ->
-                addFavoriteMovieUseCase.addFavoriteMovie(movie, context)
+                addFavoriteMovieUseCase.addFavoriteMovie(movie, getApplication())
                 val currentList = _moviesList.value?.toMutableList()
-                currentList?.add(position, movie)
-                _moviesList.postValue(currentList)
+                currentList?.let {
+                    it.add(position, movie)
+                    _moviesList.postValue(it)
+                }
             }
         }
     }

@@ -7,7 +7,7 @@ import ru.yandex.repinanr.movies.data.room.Db
 class InsertCommentMovieUseCase(private val repository: MoviesListRepository) {
 
     suspend fun insertMovieComment(id: Int, comment: String, context: Context) {
-        Db.getInstance(context)?.getCommentsDao()?.update(
+        Db.getInstance(context)?.getCommentsDao()?.insert(
             CommentsEntity(id, comment)
         )
     }

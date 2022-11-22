@@ -27,6 +27,21 @@
     <string name="not_found_error_title">Фильм не найден</string>
     <string name="limit_erorr_title">Лимит запросов превышен</string>
     <string name="other_erorr_title">Что-то пошло не так</string>
-    <string name="internet_erorr_title">Что-то пошло не так</string>
     <string name="retry_error_button">Повторить</string>
+
+    <!-- Watch Later -->
+    <string name="watch_later_dialog_message">Выберите дату напоминания</string>
+    <string name="watch_later_dialog_hint">Дата</string>
+    <string name="ok" translatable="false">OK</string>
+
+    <!-- Notification Watch Later -->
+    <string name="notification_title">Сейчас то самое время</string>
+    <string name="notification_message">Время посмотреть фильм</string>
+    <string name="time_placeholder" translatable="false">10</string>
+
+    <string-array name="time_array">
+        <item>Секунд</item>
+        <item>Минут</item>
+        <item>Часов</item>
+    </string-array>
 </resources>
