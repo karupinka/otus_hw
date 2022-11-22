@@ -6,7 +6,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import ru.yandex.repinanr.movies.R
@@ -22,7 +21,6 @@ import java.net.UnknownHostException
 
 class MovieDetailViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = MoviesListRepositoryImpl
-    private val context = getApplication<Application>().applicationContext
     private var _moviesItem = MutableLiveData<DataModel.Movie>()
     val moviesItem: LiveData<DataModel.Movie>
         get() = _moviesItem
@@ -48,7 +46,7 @@ class MovieDetailViewModel(application: Application) : AndroidViewModel(applicat
     private val getCommentMovieUseCase = GetCommentMovieUseCase(repository)
 
     fun getMovie(id: Int) {
-        GlobalScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 val response = getMovieUseCase.getMovie(id)
 
@@ -70,24 +68,28 @@ class MovieDetailViewModel(application: Application) : AndroidViewModel(applicat
                         LIMIT, TOO_MANY_RESPONSES -> R.string.limit_erorr_title
                         else -> R.string.other_erorr_title
                     }
-                    _errorMessage.postValue(context.getString(error))
+                    _errorMessage.postValue(
+                        getApplication<Application>().applicationContext.getString(error)
+                    )
                     _loading.value = false
                 }
             } catch (e: HttpException) {
-                _errorMessage.postValue(context.getString(R.string.other_erorr_title))
+                _errorMessage.postValue(
+                    getApplication<Application>().applicationContext.getString(R.string.other_erorr_title)
+                )
                 _loading.postValue(false)
             } catch (e: UnknownHostException) {
-                _errorMessage.postValue(context.getString(R.string.other_erorr_title))
+                _errorMessage.postValue(
+                    getApplication<Application>().applicationContext.getString(R.string.other_erorr_title)
+                )
                 _loading.postValue(false)
             }
         }
     }
 
     fun getFavoriteMovie(id: Int) {
-        context.let {
-            viewModelScope.launch(Dispatchers.IO) {
-                _isFavorite = getFavoriteMovieUseCase.getFavoriteMovie(id, context) != null
-            }
+        viewModelScope.launch(Dispatchers.IO) {
+            _isFavorite = getFavoriteMovieUseCase.getFavoriteMovie(id, getApplication()) != null
         }
     }
 
@@ -97,7 +99,12 @@ class MovieDetailViewModel(application: Application) : AndroidViewModel(applicat
 
     fun getMovieComment(movieId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            _commentMessage.postValue(getCommentMovieUseCase.getMovieComment(movieId, context))
+            _commentMessage.postValue(
+                getCommentMovieUseCase.getMovieComment(
+                    movieId,
+                    getApplication()
+                )
+            )
         }
     }
 
