@@ -12,6 +12,7 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -38,7 +39,6 @@ class MoviesListFragment : Fragment() {
     private lateinit var viewModel: MoviesListViewModel
     private var adapter: MovieAdapter? = null
     private lateinit var binding: MoviesRecycleBinding
-    private val mDisposable = CompositeDisposable()
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory

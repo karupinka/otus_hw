@@ -4,21 +4,16 @@ import android.app.Application
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
-import ru.yandex.repinanr.movies.data.network.service.ApiFactory
+import ru.yandex.repinanr.movies.data.network.service.ApiClient
 import ru.yandex.repinanr.movies.data.network.service.MoviesService
 import ru.yandex.repinanr.movies.data.repository.MoviesListRepositoryImpl
 import ru.yandex.repinanr.movies.data.room.AppDb
 import ru.yandex.repinanr.movies.data.room.CommentsDao
 import ru.yandex.repinanr.movies.data.room.FavoriteMoviesDao
 import ru.yandex.repinanr.movies.data.room.MoviesDao
-import ru.yandex.repinanr.movies.domain.MoviesListRepository
 
 @Module
 interface DataModule {
-
-    @Binds
-    @ApplicationScope
-    fun bindMovieRepository(moviesListRepositoryImpl: MoviesListRepositoryImpl): MoviesListRepository
 
     companion object {
         @Provides
@@ -42,7 +37,7 @@ interface DataModule {
         @Provides
         @ApplicationScope
         fun provideApiService(): MoviesService {
-            return ApiFactory.apiService
+            return ApiClient.apiService
         }
 
         @Provides

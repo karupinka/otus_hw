@@ -9,7 +9,7 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import ru.yandex.repinanr.movies.BuildConfig
 
-object ApiFactory {
+object ApiClient {
     private const val BASE_URL = "https://kinopoiskapiunofficial.tech"
     private const val API_KEY = ""
 

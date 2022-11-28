@@ -18,10 +18,8 @@ import javax.inject.Inject
 class SaveDataDialog @Inject constructor(): DialogFragment() {
     private val args by navArgs<SaveDataDialogArgs>()
 
-    private lateinit var viewModel: SaveDialogViewModel
-
     @Inject
-    lateinit var viewModelFactory: ViewModelFactory
+    lateinit var viewModel: SaveDialogViewModel
 
     lateinit var saveDialogFragmentBinding: SaveDialogFragmentBinding
     internal lateinit var listener: SaveDataDialogListener
@@ -41,7 +39,7 @@ class SaveDataDialog @Inject constructor(): DialogFragment() {
             .setView(saveDialogFragmentBinding.root)
             .create()
 
-        viewModel = ViewModelProvider(this, viewModelFactory)
+        viewModel = ViewModelProvider(this)
             .get(SaveDialogViewModel::class.java)
 
         with(saveDialogFragmentBinding) {
