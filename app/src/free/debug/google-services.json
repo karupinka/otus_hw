@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "715668834503",
+    "project_id": "movies-free-6bb73",
+    "storage_bucket": "movies-free-6bb73.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:715668834503:android:491647df25a976182b56e2",
+        "android_client_info": {
+          "package_name": "ru.yandex.repinanr.movies.free.debug"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "715668834503-d2gd2jjd5o67vvrnf1ptkbcs4qjpnq8e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQeChIVn1HfoSWdp1LadXVIW7-tRhWLnk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "715668834503-d2gd2jjd5o67vvrnf1ptkbcs4qjpnq8e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

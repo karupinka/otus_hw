@@ -6,6 +6,7 @@
     <!-- Favorite list -->
     <string name="toast_remove_favorite_text">The movie is removed from favorite</string>
     <string name="toast_add_favorite_text">The movie is added to favorite</string>
+    <string name="stub_text">If you want to see favorite movies, you need to buy the application</string>
 
     <!-- Movies list -->
     <string name="rc_title">Movies list</string>

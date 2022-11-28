@@ -11,7 +11,7 @@ import ru.yandex.repinanr.movies.data.room.FavoriteMovieEntity
 
 interface MoviesListRepository {
 
-    fun getMovieItem(id: Int, isFavorite: Boolean): Flowable<Movie>
+    fun getMovieItem(id: Int): Flowable<Movie>
 
     fun getMoviesList(page: Int): Single<ItemResponse>
 

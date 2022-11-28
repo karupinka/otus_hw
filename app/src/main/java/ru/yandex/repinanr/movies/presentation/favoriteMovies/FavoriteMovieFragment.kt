@@ -50,24 +50,26 @@ class FavoriteMovieFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initAdapter()
-        viewModel = ViewModelProvider(this, viewModelFactory)
-            .get(FavoriteMovieViewModel::class.java)
-        viewModel.moviesList.observe(viewLifecycleOwner) {
-            adapter?.submitList(it)
-        }
-        activity.let {
-            val bottomNav = it?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
-            bottomNav?.let { it.visibility = View.VISIBLE }
-        }
-        viewModel.errorMessage.observe(viewLifecycleOwner) {
-            val snackbar = Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG)
-            snackbar.setAction(R.string.retry_error_button) {
-                viewModel.getFavoriteMovies()
+        if (binding.rcFavorite.visibility != View.GONE) {
+            initAdapter()
+            viewModel = ViewModelProvider(this, viewModelFactory)
+                .get(FavoriteMovieViewModel::class.java)
+            viewModel.moviesList.observe(viewLifecycleOwner) {
+                adapter?.submitList(it)
             }
-            snackbar.show()
+            activity.let {
+                val bottomNav = it?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+                bottomNav?.let { it.visibility = View.VISIBLE }
+            }
+            viewModel.errorMessage.observe(viewLifecycleOwner) {
+                val snackbar = Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG)
+                snackbar.setAction(R.string.retry_error_button) {
+                    viewModel.getFavoriteMovies()
+                }
+                snackbar.show()
+            }
+            viewModel.getFavoriteMovies()
         }
-        viewModel.getFavoriteMovies()
     }
 
     /**

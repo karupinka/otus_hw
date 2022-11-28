@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "184629919775",
+    "project_id": "movies-paid",
+    "storage_bucket": "movies-paid.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:184629919775:android:d861408860f34578fa952a",
+        "android_client_info": {
+          "package_name": "ru.yandex.repinanr.movies.paid.release"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "184629919775-v77vm2tpshsmfelo9pp5i21ajce1h28c.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDeGL70yFDyvBU6F8ZNa61gopfdYuaaHOs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "184629919775-v77vm2tpshsmfelo9pp5i21ajce1h28c.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

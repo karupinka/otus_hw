@@ -24,8 +24,8 @@ class MoviesListRepositoryImpl @Inject constructor(
     private val mapper: MovieMapper,
     private val appDb: AppDb
 ) : MoviesListRepository {
-    override fun getMovieItem(id: Int, isFavorite: Boolean) =
-        mapper.mapFlowableResponseToFlowableMovie(service.getMovie(id), isFavorite)
+    override fun getMovieItem(id: Int) =
+        mapper.mapFlowableResponseToFlowableMovie(service.getMovie(id), false)
 
     override fun getMoviesList(page: Int) = service.getMovies(page)
 

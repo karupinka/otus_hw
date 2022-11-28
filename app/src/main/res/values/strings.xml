@@ -9,6 +9,7 @@
     <!-- Favorite list -->
     <string name="toast_remove_favorite_text">Фильм удален из избранного</string>
     <string name="toast_add_favorite_text">Фильм добавлен в избранное</string>
+    <string name="stub_text">Просмотр раздела возможен в платной версии приложения</string>
 
     <!-- Details screen -->
     <string name="like">Нравится</string>
