@@ -1,12 +1,16 @@
 package ru.yandex.repinanr.movies.presentation.moviesList
 
+import android.annotation.SuppressLint
+import android.app.AlertDialog
+import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.annotation.StringRes
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -15,7 +19,6 @@ import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import ru.yandex.repinanr.movies.R
 import ru.yandex.repinanr.movies.app.App
@@ -27,11 +30,23 @@ import ru.yandex.repinanr.movies.presentation.common.MovieItemAnimator
 import ru.yandex.repinanr.movies.presentation.common.MovieListener
 import ru.yandex.repinanr.movies.presentation.common.RecyclerViewItemDecoration
 import ru.yandex.repinanr.movies.presentation.dialog.DateDialog
+import javax.inject.Inject
 
 class MoviesListFragment : Fragment() {
-    private lateinit var viewModel: MoviesListViewModel
     private var adapter: MovieAdapter? = null
     private lateinit var binding: MoviesRecycleBinding
+
+    @Inject
+    lateinit var viewModel: MoviesListViewModel
+
+    private val component by lazy {
+        (requireActivity().application as App).component
+    }
+
+    override fun onAttach(context: Context) {
+        component.inject(this)
+        super.onAttach(context)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,27 +64,46 @@ class MoviesListFragment : Fragment() {
         return binding.root
     }
 
+    @SuppressLint("SuspiciousIndentation")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initAdapter()
-        viewModel = ViewModelProvider(this, MoviesListViewModelFactory(App.instance))
-            .get(MoviesListViewModel::class.java)
-        lifecycleScope.launch {
-            viewModel.fetchMoviesListLiveDataMediator()
-            viewModel.moviesList.observe(viewLifecycleOwner) {
-                lifecycleScope.launch {
-                    adapter?.submitData(it)
-                }
-            }
-            adapter?.loadStateFlow?.collectLatest { loadStates ->
-                with(binding) {
-                    progressBar.isVisible = loadStates.refresh is LoadState.Loading
-                    if (loadStates.refresh is LoadState.Error) {
-                        createSnackBar(R.string.other_erorr_title).show()
-                    }
-                }
+        viewModel.fetchMoviesListLiveDataMediator()
+        viewModel.moviesList.observe(viewLifecycleOwner) {
+            lifecycleScope.launch {
+                adapter?.submitData(it)
             }
         }
+
+        viewModel.loading.observe(viewLifecycleOwner) {
+            if (it) binding.progressBar.visibility = VISIBLE else binding.progressBar.visibility =
+                GONE
+        }
+
+        viewModel.errorMessage.observe(viewLifecycleOwner) {
+            createSnackBar(it).show()
+        }
+
+        adapter?.addLoadStateListener { loadState ->
+            val errorState = loadState.source.append as? LoadState.Error
+                ?: loadState.source.prepend as? LoadState.Error
+                ?: loadState.append as? LoadState.Error
+                ?: loadState.prepend as? LoadState.Error
+
+            errorState?.let {
+                AlertDialog.Builder(view.context)
+                    .setTitle(R.string.other_erorr_title)
+                    .setMessage(it.error.localizedMessage)
+                    .setNegativeButton(R.string.cancel_alert_answer) { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .setPositiveButton(R.string.retry_error_button) { _, _ ->
+                        adapter?.retry()
+                    }
+                    .show()
+            }
+        }
+
         activity.let {
             val bottomNav = it?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
             bottomNav?.let {
@@ -131,9 +165,7 @@ class MoviesListFragment : Fragment() {
     fun createSnackBar(@StringRes error: Int): Snackbar {
         val snackbar = Snackbar.make(binding.root, error, Snackbar.LENGTH_LONG)
         snackbar.setAction(R.string.retry_error_button) {
-            lifecycleScope.launch {
-                viewModel.fetchMoviesListLiveDataMediator()
-            }
+            viewModel.fetchMoviesListLiveDataMediator()
         }
         return snackbar
     }

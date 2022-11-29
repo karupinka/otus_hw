@@ -3,63 +3,68 @@ package ru.yandex.repinanr.movies.data.model
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
 import androidx.paging.PagingState
-import androidx.paging.RemoteMediator
-import androidx.room.withTransaction
-import retrofit2.HttpException
+import androidx.paging.rxjava2.RxRemoteMediator
+import io.reactivex.Single
+import io.reactivex.schedulers.Schedulers
 import ru.yandex.repinanr.movies.data.network.service.MoviesService
 import ru.yandex.repinanr.movies.data.room.AppDb
+import ru.yandex.repinanr.movies.data.room.FavoriteMoviesDao
 import ru.yandex.repinanr.movies.data.room.MovieEntity
-import java.io.IOException
+import ru.yandex.repinanr.movies.data.room.MoviesDao
+import javax.inject.Inject
 
 @OptIn(ExperimentalPagingApi::class)
-class MovieRemoteMediator(
+class MovieRemoteMediator @Inject constructor(
     val service: MoviesService,
-    val appDatabase: AppDb
-) : RemoteMediator<Int, MovieEntity>() {
+    private val moviesDao: MoviesDao,
+    private val favoriteMoviesDao: FavoriteMoviesDao,
+    private val mapper: MovieMapper,
+    private val appDb: AppDb
+) : RxRemoteMediator<Int, MovieEntity>() {
     private var pageIndex = 1
 
-    override suspend fun load(
+    override fun loadSingle(
         loadType: LoadType,
         state: PagingState<Int, MovieEntity>
-    ): MediatorResult {
+    ): Single<MediatorResult> {
         pageIndex =
-            getPageIndex(loadType) ?: return MediatorResult.Success(endOfPaginationReached = true)
+            getPageIndex(loadType) ?: return Single.just(
+                MediatorResult.Success(
+                    endOfPaginationReached = true
+                )
+            )
+        when (loadType) {
+            LoadType.REFRESH -> pageIndex = 1
+            LoadType.PREPEND -> Single.just(MediatorResult.Success(true))
+            LoadType.APPEND -> {
+                var lastItem = state.lastItemOrNull()
 
-        return try {
-            val response = service.getMovies(pageIndex)
-
-            appDatabase.withTransaction {
-                if (loadType == LoadType.REFRESH) {
-                    appDatabase.getMovieDao().removeMovies()
+                if (lastItem == null) {
+                    pageIndex = INVALID_PAGE
+                    return Single.just(MediatorResult.Success(true))
                 }
-                val movies = mutableListOf<MovieEntity>()
-                val favoriteMovies =
-                    appDatabase.getFavoriteMovieDao().getAllMovies().map { it.serviceId }
-                response.body()?.items?.forEach { movieResponse ->
-                    movies.add(
-                        MovieEntity(
-                            serviceId = movieResponse.id,
-                            name = movieResponse.name ?: movieResponse.nameOriginal
-                            ?: movieResponse.nameEn ?: "",
-                            description = movieResponse.description ?: "",
-                            imageUrl = movieResponse.previewUrl,
-                            isFavoriteMovie = if (favoriteMovies.contains(movieResponse.id)
-                                    ?: false
-                            ) 1 else 0
-                        )
-                    )
-                }
-                appDatabase.getMovieDao().insertAll(movies)
             }
 
-            MediatorResult.Success(
-                endOfPaginationReached = response.body()?.items == null
-            )
-        } catch (e: IOException) {
-            MediatorResult.Error(e)
-        } catch (e: HttpException) {
-            MediatorResult.Error(e)
         }
+
+        return Single.just(loadType)
+            .subscribeOn(Schedulers.io())
+            .flatMap {
+                if (pageIndex == INVALID_PAGE) {
+                    Single.just(MediatorResult.Success(endOfPaginationReached = true))
+                } else {
+                    service.getMovies(pageIndex)
+                        .zipWith(favoriteMoviesDao.getAllMoviesSingle()) { movie, favorite ->
+                            mapper.mapListResponseToListEntity(movie.items, favorite)
+                        }
+                        .map {
+                            insertData(loadType, it)
+                        }
+                        .map<MediatorResult> { MediatorResult.Success(endOfPaginationReached = pageIndex == INVALID_PAGE) }
+                        .onErrorReturn { MediatorResult.Error(it) }
+                }
+            }
+            .onErrorReturn { MediatorResult.Error(it) }
     }
 
     private fun getPageIndex(loadType: LoadType): Int? {
@@ -70,4 +75,22 @@ class MovieRemoteMediator(
         }
         return pageIndex
     }
-}
+
+
+    private fun insertData(loadType: LoadType, data: List<MovieEntity>): List<MovieEntity> {
+        appDb.runInTransaction{
+            if (loadType == LoadType.REFRESH) {
+                moviesDao.removeMovies()
+            }
+
+            moviesDao.insertAll(data)
+        }
+
+        return data
+    }
+
+        companion object {
+            private const val TAG = "MovieRemoteMediator"
+            private const val INVALID_PAGE = -1
+        }
+    }

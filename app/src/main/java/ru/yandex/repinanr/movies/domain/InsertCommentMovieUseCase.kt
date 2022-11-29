@@ -1,14 +1,10 @@
 package ru.yandex.repinanr.movies.domain
 
-import android.content.Context
-import ru.yandex.repinanr.movies.data.room.CommentsEntity
-import ru.yandex.repinanr.movies.data.room.Db
+import javax.inject.Inject
 
-class InsertCommentMovieUseCase(private val repository: MoviesListRepository) {
+class InsertCommentMovieUseCase @Inject constructor(
+    private val repository: MoviesListRepository
+) {
 
-    suspend fun insertMovieComment(id: Int, comment: String, context: Context) {
-        Db.getInstance(context)?.getCommentsDao()?.insert(
-            CommentsEntity(id, comment)
-        )
-    }
+    operator fun invoke(id: Int, comment: String) = repository.setMovieComment(id, comment)
 }

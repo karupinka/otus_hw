@@ -28,6 +28,7 @@
     <string name="not_found_error_title">Movie not found</string>
     <string name="limit_erorr_title">Too many response</string>
     <string name="other_erorr_title">Something went wrong</string>
+    <string name="internet_erorr_title">Internet error</string>
     <string name="retry_error_button">Retry</string>
 
     <!-- Watch Later -->

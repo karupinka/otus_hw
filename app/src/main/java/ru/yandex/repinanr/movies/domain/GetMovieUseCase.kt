@@ -1,11 +1,10 @@
 package ru.yandex.repinanr.movies.domain
 
-import retrofit2.Response
-import ru.yandex.repinanr.movies.data.model.MovieResponse
+import javax.inject.Inject
 
-class GetMovieUseCase(private val repository: MoviesListRepository) {
+class GetMovieUseCase @Inject constructor(
+    private val repository: MoviesListRepository
+) {
 
-    suspend fun getMovie(id: Int): Response<MovieResponse> {
-        return repository.getMovieItem(id)
-    }
+    operator fun invoke(id: Int) = repository.getMovieItem(id, false)
 }

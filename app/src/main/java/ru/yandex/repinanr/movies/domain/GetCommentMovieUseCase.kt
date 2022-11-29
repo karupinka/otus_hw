@@ -1,10 +1,10 @@
 package ru.yandex.repinanr.movies.domain
 
-import android.content.Context
+import javax.inject.Inject
 
-class GetCommentMovieUseCase(private val repository: MoviesListRepository) {
+class GetCommentMovieUseCase @Inject constructor(
+    private val repository: MoviesListRepository
+) {
 
-    suspend fun getMovieComment(id: Int, context: Context): String {
-        return repository.getMovieComment(id, context)?.comment ?: ""
-    }
+    operator fun invoke(id: Int) = repository.getMovieComment(id)
 }
