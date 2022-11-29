@@ -22,17 +22,14 @@ import ru.yandex.repinanr.movies.R
 import ru.yandex.repinanr.movies.app.App
 import ru.yandex.repinanr.movies.data.model.DataModel
 import ru.yandex.repinanr.movies.databinding.MovieDetailsBinding
-import ru.yandex.repinanr.movies.presentation.ViewModelFactory
 import javax.inject.Inject
 
 class MoviesDetailFragment : Fragment() {
     private val args by navArgs<MoviesDetailFragmentArgs>()
-
-    private lateinit var viewModel: MovieDetailViewModel
     private lateinit var binding: MovieDetailsBinding
 
     @Inject
-    lateinit var viewModelFactory: ViewModelFactory
+    lateinit var viewModel: MovieDetailViewModel
 
     private val component by lazy {
         (requireActivity().application as App).component
@@ -70,8 +67,6 @@ class MoviesDetailFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProvider(this, viewModelFactory)
-            .get(MovieDetailViewModel::class.java)
         viewModel.moviesItem.observe(viewLifecycleOwner) {
             with(binding) {
                 Glide.with(ivMovie)

@@ -11,7 +11,7 @@ import ru.yandex.repinanr.movies.BuildConfig
 
 object ApiClient {
     private const val BASE_URL = "https://kinopoiskapiunofficial.tech"
-    private const val API_KEY = ""
+    private const val API_KEY = "be5c0ea8-4a9f-45c7-bd9c-9edd4df2dc69"
 
     val client = OkHttpClient.Builder()
         .addInterceptor(HttpLoggingInterceptor().apply {

@@ -16,7 +16,6 @@ import ru.yandex.repinanr.movies.R
 import ru.yandex.repinanr.movies.app.App
 import ru.yandex.repinanr.movies.data.model.DataModel
 import ru.yandex.repinanr.movies.databinding.ActivityFavoriteMovieBinding
-import ru.yandex.repinanr.movies.presentation.ViewModelFactory
 import ru.yandex.repinanr.movies.presentation.common.MovieItemAnimator
 import ru.yandex.repinanr.movies.presentation.common.MovieListener
 import ru.yandex.repinanr.movies.presentation.dialog.DateDialog
@@ -24,11 +23,10 @@ import javax.inject.Inject
 
 class FavoriteMovieFragment : Fragment() {
     private var adapter: FavoriteMovieAdapter? = null
-    private lateinit var viewModel: FavoriteMovieViewModel
     private lateinit var binding: ActivityFavoriteMovieBinding
 
     @Inject
-    lateinit var viewModelFactory: ViewModelFactory
+    lateinit var viewModel: FavoriteMovieViewModel
 
     private val component by lazy {
         (requireActivity().application as App).component
@@ -51,8 +49,6 @@ class FavoriteMovieFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initAdapter()
-        viewModel = ViewModelProvider(this, viewModelFactory)
-            .get(FavoriteMovieViewModel::class.java)
         viewModel.moviesList.observe(viewLifecycleOwner) {
             adapter?.submitList(it)
         }

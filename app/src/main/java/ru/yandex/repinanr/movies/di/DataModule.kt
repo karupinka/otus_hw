@@ -1,12 +1,10 @@
 package ru.yandex.repinanr.movies.di
 
 import android.app.Application
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import ru.yandex.repinanr.movies.data.network.service.ApiClient
 import ru.yandex.repinanr.movies.data.network.service.MoviesService
-import ru.yandex.repinanr.movies.data.repository.MoviesListRepositoryImpl
 import ru.yandex.repinanr.movies.data.room.AppDb
 import ru.yandex.repinanr.movies.data.room.CommentsDao
 import ru.yandex.repinanr.movies.data.room.FavoriteMoviesDao

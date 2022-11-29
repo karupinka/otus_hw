@@ -12,7 +12,6 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -20,7 +19,6 @@ import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
-import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.launch
 import ru.yandex.repinanr.movies.R
 import ru.yandex.repinanr.movies.app.App
@@ -28,7 +26,6 @@ import ru.yandex.repinanr.movies.data.Const
 import ru.yandex.repinanr.movies.data.Const.TAG_DETAIL_ACTIVITY_MOVIE
 import ru.yandex.repinanr.movies.data.model.DataModel
 import ru.yandex.repinanr.movies.databinding.MoviesRecycleBinding
-import ru.yandex.repinanr.movies.presentation.ViewModelFactory
 import ru.yandex.repinanr.movies.presentation.common.MovieItemAnimator
 import ru.yandex.repinanr.movies.presentation.common.MovieListener
 import ru.yandex.repinanr.movies.presentation.common.RecyclerViewItemDecoration
@@ -36,12 +33,11 @@ import ru.yandex.repinanr.movies.presentation.dialog.DateDialog
 import javax.inject.Inject
 
 class MoviesListFragment : Fragment() {
-    private lateinit var viewModel: MoviesListViewModel
     private var adapter: MovieAdapter? = null
     private lateinit var binding: MoviesRecycleBinding
 
     @Inject
-    lateinit var viewModelFactory: ViewModelFactory
+    lateinit var viewModel: MoviesListViewModel
 
     private val component by lazy {
         (requireActivity().application as App).component
@@ -72,8 +68,6 @@ class MoviesListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initAdapter()
-        viewModel = ViewModelProvider(this, viewModelFactory)
-            .get(MoviesListViewModel::class.java)
         viewModel.fetchMoviesListLiveDataMediator()
         viewModel.moviesList.observe(viewLifecycleOwner) {
             lifecycleScope.launch {
