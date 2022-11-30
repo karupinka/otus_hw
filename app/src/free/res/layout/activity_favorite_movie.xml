@@ -30,7 +30,7 @@
         app:srcCompat="@drawable/ic_payment" />
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/tvStub"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="44dp"

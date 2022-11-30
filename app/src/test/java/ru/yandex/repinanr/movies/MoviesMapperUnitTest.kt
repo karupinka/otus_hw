@@ -7,6 +7,7 @@ import org.junit.runner.RunWith
 import org.mockito.junit.MockitoJUnitRunner
 import ru.yandex.repinanr.movies.data.model.DataModel
 import ru.yandex.repinanr.movies.data.model.MovieMapper
+import ru.yandex.repinanr.movies.data.model.MovieResponse
 import ru.yandex.repinanr.movies.data.room.CommentsEntity
 import ru.yandex.repinanr.movies.data.room.FavoriteMovieEntity
 import ru.yandex.repinanr.movies.data.room.MovieEntity
@@ -64,6 +65,35 @@ class MoviesMapperUnitTest {
         Assert.assertEquals(movie, buildMovie())
     }
 
+    @Test
+    fun checkMapResponseToMovieOriginal() {
+        val movie =
+            movieMapper.mapResponseToMovie(buildMovieResponseWithoutNameAndEn(), isFavorite = false)
+
+        Assert.assertEquals(
+            movie::class.java,
+            DataModel.Movie::class.java
+        )
+
+        Assert.assertEquals(movie.name, "nameOriginal")
+    }
+
+    @Test
+    fun checkMapResponseToMovieEn() {
+        val movie =
+            movieMapper.mapResponseToMovie(buildMovieResponseWithoutName(), isFavorite = false)
+
+        Assert.assertEquals(movie.name, "nameEn")
+    }
+
+    @Test
+    fun checkMapResponseToMovie() {
+        val movie =
+            movieMapper.mapResponseToMovie(buildMovieResponse(), isFavorite = true)
+
+        Assert.assertEquals(movie, buildMovie())
+    }
+
     companion object {
         fun buildCommentEntity() = CommentsEntity(
             serviceId = 12,
@@ -76,6 +106,33 @@ class MoviesMapperUnitTest {
             description = "description",
             isFavoriteMovie = 1,
             imageUrl = ""
+        )
+
+        fun buildMovieResponseWithoutNameAndEn() = MovieResponse(
+            id = 12,
+            name = null,
+            nameOriginal = "nameOriginal",
+            nameEn = null,
+            description = "description",
+            previewUrl = ""
+        )
+
+        fun buildMovieResponseWithoutName() = MovieResponse(
+            id = 12,
+            name = null,
+            nameOriginal = "nameOriginal",
+            nameEn = "nameEn",
+            description = "description",
+            previewUrl = ""
+        )
+
+        fun buildMovieResponse() = MovieResponse(
+            id = 12,
+            name = "Test",
+            nameOriginal = "nameOriginal",
+            nameEn = "nameEn",
+            description = "description",
+            previewUrl = ""
         )
 
         fun buildMovie() = DataModel.Movie(

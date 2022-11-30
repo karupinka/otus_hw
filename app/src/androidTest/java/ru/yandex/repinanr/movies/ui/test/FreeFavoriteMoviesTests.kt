@@ -1,4 +1,4 @@
-package ru.yandex.repinanr.movies.ui.tests
+package ru.yandex.repinanr.movies.ui.test
 
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -11,14 +11,14 @@ import ru.yandex.repinanr.movies.ui.util.app
 
 @RunWith(AndroidJUnit4::class)
 @LargeTest
-class FavoriteMoviesTests {
+class FreeFavoriteMoviesTests {
 
     @get : Rule
     var mActivityRule = ActivityScenarioRule(MoviesActivity::class.java)
 
     @Test
     fun testAddFavoriteMovie() {
-        app {
+            app {
             var name = ""
 
             movieListScreen {
