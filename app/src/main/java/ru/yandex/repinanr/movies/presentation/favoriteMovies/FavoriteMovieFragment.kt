@@ -16,7 +16,6 @@ import ru.yandex.repinanr.movies.R
 import ru.yandex.repinanr.movies.app.App
 import ru.yandex.repinanr.movies.data.model.DataModel
 import ru.yandex.repinanr.movies.databinding.ActivityFavoriteMovieBinding
-import ru.yandex.repinanr.movies.presentation.ViewModelFactory
 import ru.yandex.repinanr.movies.presentation.common.MovieItemAnimator
 import ru.yandex.repinanr.movies.presentation.common.MovieListener
 import ru.yandex.repinanr.movies.presentation.dialog.DateDialog
@@ -24,11 +23,10 @@ import javax.inject.Inject
 
 class FavoriteMovieFragment : Fragment() {
     private var adapter: FavoriteMovieAdapter? = null
-    private lateinit var viewModel: FavoriteMovieViewModel
     private lateinit var binding: ActivityFavoriteMovieBinding
 
     @Inject
-    lateinit var viewModelFactory: ViewModelFactory
+    lateinit var viewModel: FavoriteMovieViewModel
 
     private val component by lazy {
         (requireActivity().application as App).component
@@ -52,8 +50,6 @@ class FavoriteMovieFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         if (binding.rcFavorite.visibility != View.GONE) {
             initAdapter()
-            viewModel = ViewModelProvider(this, viewModelFactory)
-                .get(FavoriteMovieViewModel::class.java)
             viewModel.moviesList.observe(viewLifecycleOwner) {
                 adapter?.submitList(it)
             }
@@ -66,9 +62,8 @@ class FavoriteMovieFragment : Fragment() {
                 snackbar.setAction(R.string.retry_error_button) {
                     viewModel.getFavoriteMovies()
                 }
-                snackbar.show()
+                viewModel.getFavoriteMovies()
             }
-            viewModel.getFavoriteMovies()
         }
     }
 
@@ -81,7 +76,10 @@ class FavoriteMovieFragment : Fragment() {
 
             adapter?.let {
                 it.setListener(object : MovieListener {
-                    override fun onFavoriteClickListener(movie: DataModel.Movie, position: Int) {
+                    override fun onFavoriteClickListener(
+                        movie: DataModel.Movie,
+                        position: Int
+                    ) {
                         removeMovie(movie, position)
                     }
 
@@ -112,7 +110,11 @@ class FavoriteMovieFragment : Fragment() {
     private fun removeMovie(movie: DataModel.Movie, position: Int) {
         viewModel.removeFavoriteMovie(movie)
         val snackbar =
-            Snackbar.make(binding.root, R.string.toast_remove_favorite_text, Snackbar.LENGTH_LONG)
+            Snackbar.make(
+                binding.root,
+                R.string.toast_remove_favorite_text,
+                Snackbar.LENGTH_LONG
+            )
         snackbar.setAction(R.string.cancel_alert_answer) {
             viewModel.cancelFavoriteMoviesRemove(position)
         }

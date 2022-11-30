@@ -12,7 +12,8 @@ import ru.yandex.repinanr.movies.presentation.moviesList.MoviesListFragment
 @Component(
     modules = [
         DataModule::class,
-        ViewModelModule::class
+        ViewModelModule::class,
+        RepositoryModule::class
     ]
 )
 interface ApplicationComponent {

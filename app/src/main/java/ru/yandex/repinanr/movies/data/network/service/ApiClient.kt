@@ -9,9 +9,9 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import ru.yandex.repinanr.movies.BuildConfig
 
-object ApiFactory {
+object ApiClient {
     private const val BASE_URL = "https://kinopoiskapiunofficial.tech"
-    private const val API_KEY = "be5c0ea8-4a9f-45c7-bd9c-9edd4df2dc69"
+    private const val API_KEY = ""
 
     val client = OkHttpClient.Builder()
         .addInterceptor(HttpLoggingInterceptor().apply {

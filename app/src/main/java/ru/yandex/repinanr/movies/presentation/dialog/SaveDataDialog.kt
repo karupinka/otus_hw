@@ -12,16 +12,13 @@ import androidx.navigation.fragment.navArgs
 import ru.yandex.repinanr.movies.app.App
 import ru.yandex.repinanr.movies.data.Const.TAG_SAVE_DIALOG
 import ru.yandex.repinanr.movies.databinding.SaveDialogFragmentBinding
-import ru.yandex.repinanr.movies.presentation.ViewModelFactory
 import javax.inject.Inject
 
 class SaveDataDialog @Inject constructor(): DialogFragment() {
     private val args by navArgs<SaveDataDialogArgs>()
 
-    private lateinit var viewModel: SaveDialogViewModel
-
     @Inject
-    lateinit var viewModelFactory: ViewModelFactory
+    lateinit var viewModel: SaveDialogViewModel
 
     lateinit var saveDialogFragmentBinding: SaveDialogFragmentBinding
     internal lateinit var listener: SaveDataDialogListener
@@ -40,9 +37,6 @@ class SaveDataDialog @Inject constructor(): DialogFragment() {
         val dialog = AlertDialog.Builder(requireActivity())
             .setView(saveDialogFragmentBinding.root)
             .create()
-
-        viewModel = ViewModelProvider(this, viewModelFactory)
-            .get(SaveDialogViewModel::class.java)
 
         with(saveDialogFragmentBinding) {
             dialogYesButton.setOnClickListener {
