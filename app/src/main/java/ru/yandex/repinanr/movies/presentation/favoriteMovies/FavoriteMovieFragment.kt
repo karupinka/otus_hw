@@ -48,22 +48,23 @@ class FavoriteMovieFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initAdapter()
-        viewModel.moviesList.observe(viewLifecycleOwner) {
-            adapter?.submitList(it)
-        }
-        activity.let {
-            val bottomNav = it?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
-            bottomNav?.let { it.visibility = View.VISIBLE }
-        }
-        viewModel.errorMessage.observe(viewLifecycleOwner) {
-            val snackbar = Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG)
-            snackbar.setAction(R.string.retry_error_button) {
+        if (binding.rcFavorite.visibility != View.GONE) {
+            initAdapter()
+            viewModel.moviesList.observe(viewLifecycleOwner) {
+                adapter?.submitList(it)
+            }
+            activity.let {
+                val bottomNav = it?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+                bottomNav?.let { it.visibility = View.VISIBLE }
+            }
+            viewModel.errorMessage.observe(viewLifecycleOwner) {
+                val snackbar = Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG)
+                snackbar.setAction(R.string.retry_error_button) {
+                    viewModel.getFavoriteMovies()
+                }
                 viewModel.getFavoriteMovies()
             }
-            snackbar.show()
         }
-        viewModel.getFavoriteMovies()
     }
 
     /**
@@ -75,7 +76,10 @@ class FavoriteMovieFragment : Fragment() {
 
             adapter?.let {
                 it.setListener(object : MovieListener {
-                    override fun onFavoriteClickListener(movie: DataModel.Movie, position: Int) {
+                    override fun onFavoriteClickListener(
+                        movie: DataModel.Movie,
+                        position: Int
+                    ) {
                         removeMovie(movie, position)
                     }
 
@@ -106,7 +110,11 @@ class FavoriteMovieFragment : Fragment() {
     private fun removeMovie(movie: DataModel.Movie, position: Int) {
         viewModel.removeFavoriteMovie(movie)
         val snackbar =
-            Snackbar.make(binding.root, R.string.toast_remove_favorite_text, Snackbar.LENGTH_LONG)
+            Snackbar.make(
+                binding.root,
+                R.string.toast_remove_favorite_text,
+                Snackbar.LENGTH_LONG
+            )
         snackbar.setAction(R.string.cancel_alert_answer) {
             viewModel.cancelFavoriteMoviesRemove(position)
         }

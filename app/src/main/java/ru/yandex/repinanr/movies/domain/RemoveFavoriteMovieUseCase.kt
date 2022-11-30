@@ -2,7 +2,7 @@ package ru.yandex.repinanr.movies.domain
 
 import javax.inject.Inject
 
-class RemoveFavoriteMovieUseCase @Inject constructor(
+open class RemoveFavoriteMovieUseCase @Inject constructor(
     private val repository: MoviesListRepository
 ) {
 

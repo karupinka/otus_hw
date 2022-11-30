@@ -47,16 +47,6 @@ class MovieMapper @Inject constructor() {
             isFavorite = true
         )
 
-    fun mapFlowableFavoriteMovieToMovie(favoriteMovieEntity: Flowable<FavoriteMovieEntity>) =
-        favoriteMovieEntity.map {
-            mapFavoriteMovieToMovie(it)
-        }
-
-    fun mapListResponseToListMovie(movieResponses: List<MovieResponse>, favoriteMovies: List<Int>) =
-        movieResponses.map {
-            mapResponseToMovie(it, favoriteMovies.contains(it.id))
-        }
-
     fun mapListResponseToListEntity(
         movieResponses: List<MovieResponse>,
         favoriteMovies: List<FavoriteMovieEntity>
